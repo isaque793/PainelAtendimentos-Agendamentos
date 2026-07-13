@@ -5,6 +5,11 @@ from app.database.connection import get_db
 from app.repositories.cidadao_repository import CidadaoRepository
 from app.schemas.cidadao import CidadaoCreate, CidadaoResponse
 from app.services.cidadao_service import CidadaoService
+from app.schemas.cidadao import (
+    CidadaoCreate,
+    CidadaoResponse,
+    CidadaoUpdate
+)
 
 router = APIRouter(
     prefix="/cidadaos",
@@ -78,3 +83,23 @@ def excluir_cidadao(
             status_code=404,
             detail=str(erro)
         )
+    
+
+    
+@router.put("/{cidadao_id}", response_model=CidadaoResponse)
+def atualizar_cidadao(
+    cidadao_id: int,
+    dados: CidadaoUpdate,
+    db: Session = Depends(get_db)
+):
+    repository = CidadaoRepository(db)
+    service = CidadaoService(repository)
+
+    try:
+        return service.atualizar(cidadao_id,dados)
+
+    except ValueError as erro:
+        raise HTTPException(
+            status_code=404,
+            detail=str(erro)
+        ) 

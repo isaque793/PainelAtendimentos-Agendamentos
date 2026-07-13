@@ -10,6 +10,11 @@ class CidadaoService:
 
     def criar(self, dados: CidadaoCreate) -> Cidadao:
 
+        if not dados.cpf and not dados.masp:
+            raise ValueError(
+                "Informe um CPF ou um MASP"
+            )
+
         # Verifica se já existe um cidadão com o mesmo CPF
         if self.repository.buscar_por_cpf(dados.cpf):
             raise ValueError("Já existe um cidadão cadastrado com este CPF.")
@@ -38,3 +43,20 @@ class CidadaoService:
     def excluir(self, cidadao_id: int):
         cidadao = self.buscar_por_id(cidadao_id)
         self.repository.excluir(cidadao)
+
+    def atualizar(self, cidadao_id: int, dados: CidadaoUpdate):
+
+        cidadao = self.repository.buscar_por_id(cidadao_id)
+
+        if not cidadao:
+            raise ValueError("Não encontrado.")
+        
+        if not dados.cpf and not dados.masp:
+            raise ValueError(
+                "Indorme um CPF ou MASP"
+            )
+        
+        return self.repository.atualizar(
+            cidadao,
+            dados
+        )

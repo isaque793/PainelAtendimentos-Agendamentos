@@ -34,3 +34,12 @@ class CidadaoRepository:
     def excluir(self, cidadao: Cidadao):
         self.db.delete(cidadao)
         self.db.commit()
+
+    def atualizar(self, cidadao, dados):
+        for chave, valor in dados.model_dump().items():
+            setattr(cidadao,chave,valor)
+
+        self.db.commit()
+        self.db.refresh(cidadao)
+
+        return cidadao

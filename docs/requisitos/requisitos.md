@@ -2,15 +2,7 @@
 
 ## RF01 - Registro do cidadão
 
-O sistema deve permitir registrar um cidadão informando:
-
-- Nome
-- CPF
-- MASP
-
-Pelo menos um identificador (CPF ou MASP) deve ser informado.
-
-A validação será realizada pela API.
+O sistema deverá permitir o cadastro de cidadãos e servidores, identificando cada registro por CPF ou MASP. É obrigatório que pelo menos um dos identificadores seja informado. O sistema deverá impedir o cadastro quando ambos estiverem ausentes ou quando houver duplicidade do identificador informado.
 
 -----------------------------------------------------------------------------------------------------------------------
 
