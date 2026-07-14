@@ -1,7 +1,5 @@
 from sqlalchemy.orm import Session
-
 from app.models.cidadao import Cidadao
-
 
 class CidadaoRepository:
 
