@@ -1,6 +1,6 @@
 from app.models.cidadao import Cidadao
 from app.repositories.cidadao_repository import CidadaoRepository
-from app.schemas.cidadao import CidadaoCreate
+from app.schemas.cidadao import CidadaoCreate, CidadaoUpdate
 
 
 class CidadaoService:
@@ -44,19 +44,28 @@ class CidadaoService:
         cidadao = self.buscar_por_id(cidadao_id)
         self.repository.excluir(cidadao)
 
-    def atualizar(self, cidadao_id: int, dados: CidadaoUpdate):
+    def atualizar(
+       self,
+       cidadao_id: int,
+       dados: CidadaoUpdate
+) -> Cidadao:
+       cidadao = self.buscar_por_id(cidadao_id)
 
-        cidadao = self.repository.buscar_por_id(cidadao_id)
+       cpf_final = (
+        dados.cpf
+        if dados.cpf is not None
+        else cidadao.cpf
+    )
 
-        if not cidadao:
-            raise ValueError("Não encontrado.")
-        
-        if not dados.cpf and not dados.masp:
-            raise ValueError(
-                "Indorme um CPF ou MASP"
-            )
-        
-        return self.repository.atualizar(
-            cidadao,
-            dados
+       masp_final = (
+           dados.masp
+           if dados.masp is not None
+           else cidadao.masp
+    )
+
+       if not cpf_final and not masp_final:
+        raise ValueError(
+            "O cidadão deve possuir CPF ou MASP."
         )
+
+       return self.repository.atualizar(cidadao, dados)

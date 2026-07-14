@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
 from app.repositories.cidadao_repository import CidadaoRepository
-from app.schemas.cidadao import CidadaoCreate, CidadaoResponse
 from app.services.cidadao_service import CidadaoService
 from app.schemas.cidadao import (
     CidadaoCreate,

@@ -15,8 +15,8 @@ class CidadaoResponse(CidadaoCreate):
     model_config = ConfigDict(from_attributes=True)
 
 class CidadaoUpdate(BaseModel):
-    nome: str
+    nome: str | None = None
     cpf: str | None = None
     telefone: str | None = None
-    email: str | None = None
+    email: EmailStr | None = None
     masp: str | None = None
