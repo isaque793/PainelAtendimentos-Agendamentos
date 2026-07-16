@@ -1,24 +1,32 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.database.base import Base
 from app.database.connection import engine
-from app.database import models
-
 from app.routers.cidadao_router import router as cidadao_router
 
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI(
-    title="Painel de Atendimentos",
-    version="1.0.0"
+    title="Painel de Atendimentos e Agendamentos"
 )
 
-Base.metadata.create_all(bind=engine)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(cidadao_router)
 
 
 @app.get("/")
-def home():
+def inicio():
     return {
-        "status": "online",
-        "mensagem": "API do Painel de Atendimentos"
+        "mensagem": "API do Painel de Atendimentos funcionando"
     }

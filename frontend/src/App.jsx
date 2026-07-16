@@ -14,6 +14,9 @@ import Dashboard
 import InternalLayout
     from "./layouts/InternalLayout";
 
+import Cidadaos 
+    from "./pages/Cidadaos/Cidadaos";
+
 function App() {
     return (
         <BrowserRouter>
@@ -31,6 +34,16 @@ function App() {
                         </InternalLayout>
                     }
                 />
+                
+                <Route
+                    path="/direcao/cidadaos"
+                    element={
+                       <InternalLayout>
+                          <Cidadaos />
+                       </InternalLayout>
+                    }
+                />
+
 
                 <Route
                     path="*"

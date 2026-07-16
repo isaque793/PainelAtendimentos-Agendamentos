@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { cadastrarCidadao } from "../../api/cidadaoService";
+
 import {
     Alert,
     Box,
@@ -33,6 +35,9 @@ function AtendimentoPublico() {
     const [solicitacaoConcluida, setSolicitacaoConcluida] =
         useState(false);
 
+    const [enviando, setEnviando] = useState(false);
+    const [mensagemErro, setMensagemErro] = useState("");
+    
     function atualizarCampo(evento) {
         const { name, value } = evento.target;
 
@@ -41,14 +46,39 @@ function AtendimentoPublico() {
             [name]: value
         }));
     }
+    
 
-    function solicitarAtendimento(evento) {
-        evento.preventDefault();
+    async function solicitarAtendimento(evento) {
+    evento.preventDefault();
 
-        console.log("Solicitação enviada:", formulario);
+    try {
+        setEnviando(true);
+        setMensagemErro("");
+        setSolicitacaoConcluida(false);
+
+        await cadastrarCidadao({
+            nome: formulario.nome.trim(),
+            cpf: formulario.cpf.replace(/\D/g, ""),
+            telefone: formulario.telefone.replace(/\D/g, "") || null,
+            email: null,
+            masp: null
+        });
 
         setSolicitacaoConcluida(true);
+
+        setFormulario({
+            nome: "",
+            cpf: "",
+            telefone: "",
+            tipoAtendimento: "",
+            descricao: ""
+        });
+    } catch (erro) {
+        setMensagemErro(erro.message);
+    } finally {
+        setEnviando(false);
     }
+}
 
     return (
         <Box className="public-page">
@@ -88,6 +118,15 @@ function AtendimentoPublico() {
                         Solicitação registrada! Em breve exibiremos aqui
                         sua senha e sua posição na fila.
                     </Alert>
+                )}
+
+                {mensagemErro && (
+                   <Alert
+                       severity="error"
+                       className="success-message"
+    >
+                      {mensagemErro}
+                   </Alert>
                 )}
 
                 <Card className="request-card">
@@ -188,12 +227,16 @@ function AtendimentoPublico() {
                                 />
 
                                 <Button
-                                    type="submit"
-                                    variant="contained"
-                                    size="large"
-                                    fullWidth
-                                >
-                                    Entrar na fila de atendimento
+                                   type="submit"
+                                   variant="contained"
+                                   size="large"
+                                   fullWidth
+                                   disabled={enviando}
+>
+                                   {enviando
+                                      ? "Enviando solicitação..."
+                                      : "Entrar na fila de atendimento"
+                                    }
                                 </Button>
                             </Stack>
                         </Box>
