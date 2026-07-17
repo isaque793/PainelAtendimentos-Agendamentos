@@ -1,4 +1,4 @@
-import { apiRequest } from "./api";
+import { apiRequest } from "../api/api";
 
 export function listarCidadaos() {
   return apiRequest("/cidadaos/");

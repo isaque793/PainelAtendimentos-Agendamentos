@@ -17,6 +17,10 @@ import InternalLayout
 import Cidadaos 
     from "./pages/Cidadaos/Cidadaos";
 
+import AtendimentoServidor
+    from "./pages/AtendimentoServidor/AtendimentoServidor";
+
+
 function App() {
     return (
         <BrowserRouter>
@@ -42,6 +46,11 @@ function App() {
                           <Cidadaos />
                        </InternalLayout>
                     }
+                />
+
+                <Route
+                   path="/direcao/atendimentos"
+                   element={<AtendimentoServidor />}
                 />
 
 

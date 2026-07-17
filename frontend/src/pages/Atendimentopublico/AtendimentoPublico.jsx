@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { cadastrarCidadao } from "../../api/cidadaoService";
+import { cadastrarCidadao } from "../../services/cidadaoService";
 
 import {
     Alert,

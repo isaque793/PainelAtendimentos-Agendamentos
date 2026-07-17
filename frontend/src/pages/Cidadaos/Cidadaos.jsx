@@ -23,7 +23,7 @@ import {
   cadastrarCidadao,
   excluirCidadao,
   listarCidadaos,
-} from "../../api/cidadaoService";
+} from "../../services/cidadaoService";
 
 const formularioInicial = {
   nome: "",
