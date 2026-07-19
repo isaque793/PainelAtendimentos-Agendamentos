@@ -7,6 +7,14 @@ from app.models.atendimento import (
     StatusAtendimento,
 )
 
+class CidadaoResumo(BaseModel):
+    id: int
+    nome: str
+    cpf: str | None
+    masp: str | None
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 class AtendimentoCreate(BaseModel):
     cidadao_id: int
@@ -21,6 +29,7 @@ class AtendimentoCreate(BaseModel):
 class AtendimentoResponse(BaseModel):
     id: int
     cidadao_id: int
+    cidadao: CidadaoResumo
     assunto: str
     descricao: str | None
     prioridade: PrioridadeAtendimento
