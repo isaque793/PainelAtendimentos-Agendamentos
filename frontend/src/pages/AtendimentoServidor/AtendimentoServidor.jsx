@@ -31,7 +31,7 @@ import HistoricoAtendimentos
   from "../../components/atendimento/HistoricoAtendimentos";
 
 import {
-  listarAtendimentosAguardando,
+  listarFilaAtendimentos,
   listarAtendimentosEmAndamento,
   listarAtendimentosFinalizados,
   convocarAtendimento,
@@ -57,6 +57,25 @@ export default function AtendimentoServidor() {
   const [ultimaAtualizacao, setUltimaAtualizacao] =
     useState(null);
 
+  /*
+   * Temporariamente usamos um nome fixo.
+   * Futuramente esse valor virá do usuário autenticado.
+   */
+  const servidorResponsavel = "Servidor Teste";
+
+
+  function obterMensagemErro(error) {
+    if (typeof error?.message === "string") {
+      return error.message;
+    }
+
+    if (typeof error === "string") {
+      return error;
+    }
+
+    return "Ocorreu um erro inesperado.";
+  }
+
 
   const carregarPainel = useCallback(
     async (exibirCarregamento = true) => {
@@ -72,7 +91,7 @@ export default function AtendimentoServidor() {
           atendimentosEmAndamento,
           atendimentosFinalizados,
         ] = await Promise.all([
-          listarAtendimentosAguardando(),
+          listarFilaAtendimentos(),
           listarAtendimentosEmAndamento(),
           listarAtendimentosFinalizados(),
         ]);
@@ -108,7 +127,7 @@ export default function AtendimentoServidor() {
         );
 
         setErro(
-          error?.message ||
+          obterMensagemErro(error) ||
             "Não foi possível carregar os atendimentos."
         );
       } finally {
@@ -131,7 +150,10 @@ export default function AtendimentoServidor() {
       setCarregando(true);
       setErro("");
 
-      await convocarAtendimento(atendimento.id);
+      await convocarAtendimento(
+        atendimento.id,
+        servidorResponsavel
+      );
 
       setObservacoes("");
 
@@ -143,7 +165,7 @@ export default function AtendimentoServidor() {
       );
 
       setErro(
-        error?.message ||
+        obterMensagemErro(error) ||
           "Não foi possível convocar o cidadão."
       );
     } finally {
@@ -157,7 +179,10 @@ export default function AtendimentoServidor() {
       setCarregando(true);
       setErro("");
 
-      await iniciarAtendimento(atendimento.id);
+      await iniciarAtendimento(
+        atendimento.id,
+        servidorResponsavel
+      );
 
       await carregarPainel(false);
     } catch (error) {
@@ -167,7 +192,7 @@ export default function AtendimentoServidor() {
       );
 
       setErro(
-        error?.message ||
+        obterMensagemErro(error) ||
           "Não foi possível iniciar o atendimento."
       );
     } finally {
@@ -176,37 +201,38 @@ export default function AtendimentoServidor() {
   }
 
 
-    async function handleFinalizar(
+  async function handleFinalizar(
     atendimento,
     textoObservacoes
-    ) {
+  ) {
     try {
-        setCarregando(true);
-        setErro("");
+      setCarregando(true);
+      setErro("");
 
-        await finalizarAtendimento(
+      await finalizarAtendimento(
         atendimento.id,
         "ATENDIMENTO_CONCLUIDO",
         textoObservacoes
-        );
+      );
 
-        setObservacoes("");
+      setObservacoes("");
 
-        await carregarPainel(false);
+      await carregarPainel(false);
     } catch (error) {
-        console.error(
+      console.error(
         "Erro ao finalizar atendimento:",
         error
-        );
+      );
 
-        setErro(
-        error?.message ||
-            "Não foi possível finalizar o atendimento."
-        );
+      setErro(
+        obterMensagemErro(error) ||
+          "Não foi possível finalizar o atendimento."
+      );
     } finally {
-        setCarregando(false);
+      setCarregando(false);
     }
-    }
+  }
+
 
   return (
     <Box
@@ -344,11 +370,12 @@ export default function AtendimentoServidor() {
               ) : (
                 fila.map((atendimento) => (
                   <CardFila
-                    key={atendimento.id}
-                    atendimento={atendimento}
-                    aoChamar={handleChamar}
-                    carregando={carregando}
-                  />
+                        key={atendimento.id}
+                        atendimento={atendimento}
+                        aoChamar={handleChamar}
+                        aoIniciar={handleIniciar}
+                        carregando={carregando}
+                    />
                 ))
               )}
             </Stack>

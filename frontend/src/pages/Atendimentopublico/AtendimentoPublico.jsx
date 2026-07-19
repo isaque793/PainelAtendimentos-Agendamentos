@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { cadastrarCidadao } from "../../services/cidadaoService";
+import { cadastrarAtendimento } from "../../services/atendimentoService";
 
 import {
     Alert,
@@ -56,13 +57,42 @@ function AtendimentoPublico() {
         setMensagemErro("");
         setSolicitacaoConcluida(false);
 
-        await cadastrarCidadao({
-            nome: formulario.nome.trim(),
-            cpf: formulario.cpf.replace(/\D/g, ""),
-            telefone: formulario.telefone.replace(/\D/g, "") || null,
-            email: null,
-            masp: null
-        });
+      const cidadaoCriado = await cadastrarCidadao({
+    nome: formulario.nome.trim(),
+    cpf: formulario.cpf.replace(/\D/g, "") || null,
+    telefone:
+        formulario.telefone.replace(/\D/g, "") || null,
+    email: null,
+    masp: null
+});
+
+console.log("Resposta do cidadão:", cidadaoCriado);
+
+if (!cidadaoCriado?.id) {
+    throw new Error(
+        "O backend cadastrou o cidadão, mas não retornou o ID."
+    );
+}
+
+const dadosAtendimento = {
+    cidadao_id: cidadaoCriado.id,
+    assunto: formulario.tipoAtendimento,
+    descricao: formulario.descricao.trim() || null,
+    prioridade: "NORMAL"
+};
+
+console.log(
+    "Dados enviados ao atendimento:",
+    dadosAtendimento
+);
+
+const atendimentoCriado =
+    await cadastrarAtendimento(dadosAtendimento);
+
+console.log(
+    "Atendimento criado:",
+    atendimentoCriado
+);
 
         setSolicitacaoConcluida(true);
 
@@ -74,11 +104,14 @@ function AtendimentoPublico() {
             descricao: ""
         });
     } catch (erro) {
+        console.error("Erro ao solicitar atendimento:", erro);
         setMensagemErro(erro.message);
     } finally {
         setEnviando(false);
     }
 }
+    
+
 
     return (
         <Box className="public-page">

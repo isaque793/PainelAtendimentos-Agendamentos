@@ -1,5 +1,13 @@
 import { apiRequest } from "../api/api";
 
+
+export function cadastrarAtendimento(dados) {
+  return apiRequest("/atendimentos/", {
+    method: "POST",
+    body: JSON.stringify(dados),
+  });
+}
+
 export function listarFilaAtendimentos() {
   return apiRequest("/atendimentos/fila");
 }
@@ -66,6 +74,8 @@ export function finalizarAtendimento(
     }
   );
 }
+
+
 
 export function cancelarAtendimento(
   atendimentoId,

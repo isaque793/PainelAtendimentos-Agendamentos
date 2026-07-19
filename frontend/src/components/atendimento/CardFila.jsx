@@ -1,7 +1,17 @@
-import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
-import CampaignOutlinedIcon from "@mui/icons-material/CampaignOutlined";
-import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
-import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import AccessTimeOutlinedIcon
+  from "@mui/icons-material/AccessTimeOutlined";
+
+import CampaignOutlinedIcon
+  from "@mui/icons-material/CampaignOutlined";
+
+import DescriptionOutlinedIcon
+  from "@mui/icons-material/DescriptionOutlined";
+
+import PersonOutlineOutlinedIcon
+  from "@mui/icons-material/PersonOutlineOutlined";
+
+import PlayArrowOutlinedIcon
+  from "@mui/icons-material/PlayArrowOutlined";
 
 import {
   Box,
@@ -62,16 +72,30 @@ function calcularTempoEspera(dataSolicitacao) {
 export default function CardFila({
   atendimento,
   aoChamar,
+  aoIniciar,
   carregando = false,
 }) {
   const cidadao = atendimento?.cidadao;
+
   const nomeCidadao =
-    cidadao?.nome || `Cidadão #${atendimento?.cidadao_id}`;
+    cidadao?.nome ||
+    `Cidadão #${atendimento?.cidadao_id}`;
 
   const prioritario =
     atendimento?.prioridade === "PRIORITARIO";
 
-  function chamarCidadao() {
+  const convocado =
+    atendimento?.status === "CONVOCADO";
+
+  function executarAcao() {
+    if (convocado) {
+      if (typeof aoIniciar === "function") {
+        aoIniciar(atendimento);
+      }
+
+      return;
+    }
+
     if (typeof aoChamar === "function") {
       aoChamar(atendimento);
     }
@@ -101,7 +125,7 @@ export default function CardFila({
               direction="row"
               spacing={1.25}
               alignItems="center"
-              minWidth={0}
+              sx={{ minWidth: 0 }}
             >
               <Box
                 sx={{
@@ -117,7 +141,7 @@ export default function CardFila({
                 <PersonOutlineOutlinedIcon />
               </Box>
 
-              <Box minWidth={0}>
+              <Box sx={{ minWidth: 0 }}>
                 <Typography
                   variant="subtitle1"
                   fontWeight={700}
@@ -138,12 +162,34 @@ export default function CardFila({
               </Box>
             </Stack>
 
-            <Chip
-              size="small"
-              label={prioritario ? "Prioritário" : "Normal"}
-              color={prioritario ? "warning" : "default"}
-              variant={prioritario ? "filled" : "outlined"}
-            />
+            <Stack spacing={0.75} alignItems="flex-end">
+              <Chip
+                size="small"
+                label={
+                  prioritario
+                    ? "Prioritário"
+                    : "Normal"
+                }
+                color={
+                  prioritario
+                    ? "warning"
+                    : "default"
+                }
+                variant={
+                  prioritario
+                    ? "filled"
+                    : "outlined"
+                }
+              />
+
+              {convocado && (
+                <Chip
+                  size="small"
+                  label="Convocado"
+                  color="info"
+                />
+              )}
+            </Stack>
           </Stack>
 
           <Divider />
@@ -167,8 +213,12 @@ export default function CardFila({
                   Assunto
                 </Typography>
 
-                <Typography variant="body2" fontWeight={600}>
-                  {atendimento?.assunto || "Não informado"}
+                <Typography
+                  variant="body2"
+                  fontWeight={600}
+                >
+                  {atendimento?.assunto ||
+                    "Não informado"}
                 </Typography>
               </Box>
             </Stack>
@@ -196,8 +246,13 @@ export default function CardFila({
 
           <Button
             variant="contained"
-            startIcon={<CampaignOutlinedIcon />}
-            onClick={chamarCidadao}
+            color={convocado ? "success" : "primary"}
+            startIcon={
+              convocado
+                ? <PlayArrowOutlinedIcon />
+                : <CampaignOutlinedIcon />
+            }
+            onClick={executarAcao}
             disabled={carregando}
             fullWidth
             sx={{
@@ -207,8 +262,10 @@ export default function CardFila({
             }}
           >
             {carregando
-              ? "Chamando..."
-              : `Chamar ${nomeCidadao.split(" ")[0]}`}
+              ? "Processando..."
+              : convocado
+                ? "Iniciar atendimento"
+                : `Chamar ${nomeCidadao.split(" ")[0]}`}
           </Button>
         </Stack>
       </CardContent>
