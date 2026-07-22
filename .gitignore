@@ -24,3 +24,7 @@ venv/
 .coverage
 htmlcov/
 EOF
+
+*.db
+*.sqlite
+*.sqlite3

@@ -29,6 +29,21 @@ class Atendimento(BaseModel):
         index=True,
     )
 
+    servidor_nome: Mapped[str | None] = mapped_column(
+        String(150),
+        nullable=True,
+   )
+
+    servidor_masp: Mapped[str | None] = mapped_column(
+        String(30),
+        nullable=True,
+    )
+
+    numero_sala: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+    )
+
     assunto: Mapped[str] = mapped_column(
         String(150),
         nullable=False,
@@ -92,3 +107,16 @@ class Atendimento(BaseModel):
         "Cidadao",
         lazy="joined",
     )
+
+    setor_id: Mapped[int] = mapped_column(
+    ForeignKey("setores.id"),
+    nullable=False,
+    index=True,
+)
+
+    setor = relationship(
+        "Setor",
+        back_populates="atendimentos",
+        lazy="joined",
+    )
+
