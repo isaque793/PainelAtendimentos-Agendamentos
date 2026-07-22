@@ -20,6 +20,9 @@ import Cidadaos
 import AtendimentoServidor
     from "./pages/AtendimentoServidor/AtendimentoServidor";
 
+import PainelChamada
+    from "./pages/PainelChamada/PainelChamada";
+
 
 function App() {
     return (
@@ -51,6 +54,11 @@ function App() {
                 <Route
                    path="/direcao/atendimentos"
                    element={<AtendimentoServidor />}
+                />
+
+                <Route
+                   path="/chamada"
+                   element={<PainelChamada />}
                 />
 
 

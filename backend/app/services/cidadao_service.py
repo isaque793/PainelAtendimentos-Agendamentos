@@ -15,8 +15,10 @@ class CidadaoService:
                 "Informe um CPF ou um MASP"
             )
 
-        # Verifica se já existe um cidadão com o mesmo CPF
-        if self.repository.buscar_por_cpf(dados.cpf):
+        # Verifica se já existe um cidadão com o mesmo CPF (só quando um CPF
+        # foi de fato informado — antes, isso bloqueava erroneamente o
+        # segundo cidadão cadastrado só com MASP, sem CPF).
+        if dados.cpf and self.repository.buscar_por_cpf(dados.cpf):
             raise ValueError("Já existe um cidadão cadastrado com este CPF.")
 
         cidadao = Cidadao(

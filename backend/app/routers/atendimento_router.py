@@ -11,6 +11,7 @@ from app.schemas.atendimento import (
     AtendimentoFinalizar,
     AtendimentoIniciar,
     AtendimentoResponse,
+    ChamadaPublica,
 )
 from app.services.atendimento_service import AtendimentoService
 
@@ -29,6 +30,22 @@ def criar_service(db: Session) -> AtendimentoService:
         repository=atendimento_repository,
         cidadao_repository=cidadao_repository,
     )
+
+
+@router.get(
+    "/chamada-publica",
+    response_model=list[ChamadaPublica],
+)
+def listar_chamada_publica(
+    db: Session = Depends(get_db),
+):
+    """Endpoint para a TV da sala de espera. O response_model garante que
+    só os campos declarados em ChamadaPublica saem na resposta — nenhum
+    dado pessoal além do nome é exposto, mesmo que o objeto interno tenha
+    mais campos."""
+    service = criar_service(db)
+
+    return service.listar_chamada_publica()
 
 
 @router.post(

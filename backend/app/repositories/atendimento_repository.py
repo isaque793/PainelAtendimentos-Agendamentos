@@ -104,6 +104,27 @@ class AtendimentoRepository:
             self.db.scalars(comando).all()
         )
 
+    def listar_chamadas_recentes(self, limite: int = 8) -> list[Atendimento]:
+        """Para a tela de chamada da TV: os atendimentos convocados ou em
+        andamento mais recentes, do mais novo pro mais antigo."""
+        comando = (
+            select(Atendimento)
+            .where(
+                Atendimento.status.in_(
+                    [
+                        StatusAtendimento.CONVOCADO.value,
+                        StatusAtendimento.EM_ATENDIMENTO.value,
+                    ]
+                )
+            )
+            .order_by(Atendimento.data_convocacao.desc())
+            .limit(limite)
+        )
+
+        return list(
+            self.db.scalars(comando).all()
+        )
+
     def salvar(self, atendimento: Atendimento) -> Atendimento:
         self.db.add(atendimento)
         self.db.commit()

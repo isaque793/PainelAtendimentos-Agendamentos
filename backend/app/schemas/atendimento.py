@@ -72,3 +72,20 @@ class AtendimentoCancelar(BaseModel):
     observacoes: str = Field(
         min_length=3,
     )
+
+
+class ChamadaPublica(BaseModel):
+    """
+    Schema mínimo para a tela de chamada exibida na TV da sala de espera.
+
+    Propositalmente NÃO inclui CPF, MASP, telefone, e-mail ou qualquer outro
+    dado pessoal além do nome — que é o mínimo necessário para a pessoa se
+    reconhecer sendo chamada, conforme o princípio de minimização da LGPD.
+    """
+    id: int
+    nome: str
+    guiche: str | None = None
+    status: StatusAtendimento
+    chamado_em: datetime | None = None
+
+    model_config = ConfigDict(from_attributes=True)

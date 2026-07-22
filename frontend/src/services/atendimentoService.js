@@ -91,3 +91,7 @@ export function cancelarAtendimento(
     }
   );
 }
+
+export function listarChamadaPublica() {
+  return apiRequest("/atendimentos/chamada-publica");
+}

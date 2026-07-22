@@ -1,0 +1,94 @@
+.painel-chamada {
+  min-height: 100vh;
+  background: #0f172a;
+  color: #fff;
+  font-family: "Segoe UI", Arial, sans-serif;
+  padding: 32px 48px;
+  box-sizing: border-box;
+}
+
+.painel-chamada-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 2px solid #1e293b;
+  padding-bottom: 20px;
+  margin-bottom: 32px;
+}
+
+.painel-chamada-header h1 {
+  font-size: 32px;
+  margin: 0;
+}
+
+.painel-chamada-header .relogio {
+  font-size: 22px;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+
+.chamada-atual {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  border-radius: 20px;
+  padding: 48px;
+  text-align: center;
+  margin-bottom: 40px;
+  box-shadow: 0 20px 50px rgba(37, 99, 235, 0.35);
+}
+
+.chamada-atual .rotulo {
+  font-size: 20px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #bfdbfe;
+  margin-bottom: 12px;
+}
+
+.chamada-atual .nome {
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.chamada-atual .guiche {
+  font-size: 28px;
+  color: #dbeafe;
+  margin-top: 16px;
+}
+
+.chamada-vazia {
+  text-align: center;
+  color: #64748b;
+  font-size: 22px;
+  padding: 60px 0;
+}
+
+.lista-anteriores h2 {
+  font-size: 18px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 16px;
+}
+
+.linha-anterior {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #1e293b;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  font-size: 22px;
+}
+
+.linha-anterior .guiche-tag {
+  color: #94a3b8;
+  font-size: 18px;
+}
+
+@media (max-width: 700px) {
+  .painel-chamada { padding: 20px; }
+  .chamada-atual .nome { font-size: 40px; }
+  .chamada-atual { padding: 28px; }
+}

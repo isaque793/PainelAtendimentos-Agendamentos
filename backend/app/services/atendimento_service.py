@@ -47,6 +47,22 @@ class AtendimentoService:
     def listar_finalizados(self) -> list[Atendimento]:
         return self.repository.listar_finalizados()
 
+    def listar_chamada_publica(self) -> list[dict]:
+        """Monta manualmente um dicionário mínimo para a tela pública da
+        TV — só nome, guichê e status. Nunca inclui CPF, MASP, telefone
+        ou e-mail, mesmo que esses campos existam no cidadão associado."""
+        atendimentos = self.repository.listar_chamadas_recentes()
+        return [
+            {
+                "id": atendimento.id,
+                "nome": atendimento.cidadao.nome,
+                "guiche": atendimento.servidor_responsavel,
+                "status": atendimento.status,
+                "chamado_em": atendimento.data_convocacao,
+            }
+            for atendimento in atendimentos
+        ]
+
     def buscar_por_id(self, atendimento_id: int) -> Atendimento:
         atendimento = self.repository.buscar_por_id(atendimento_id)
 
