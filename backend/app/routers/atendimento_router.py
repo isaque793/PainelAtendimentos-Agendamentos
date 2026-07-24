@@ -235,22 +235,20 @@ def convocar_atendimento(
 )
 def iniciar_atendimento(
     atendimento_id: int,
-    dados: AtendimentoIniciar,
     db: Session = Depends(get_db),
 ):
     service = criar_service(db)
 
     try:
         return service.iniciar(
-            atendimento_id,
-            dados,
+            atendimento_id
         )
 
     except ValueError as erro:
         raise HTTPException(
             status_code=400,
             detail=str(erro),
-        )
+        ) from erro
 
 
 @router.patch(

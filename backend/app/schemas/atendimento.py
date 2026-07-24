@@ -85,14 +85,13 @@ class AtendimentoConvocar(BaseModel):
         max_length=30,
     )
 
-    setor_id: int
+    setor_id: int = Field(
+        gt=0,
+    )
 
 
 class AtendimentoIniciar(BaseModel):
-    servidor_responsavel: str = Field(
-        min_length=3,
-        max_length=150,
-    )
+    pass
 
 
 class AtendimentoFinalizar(BaseModel):

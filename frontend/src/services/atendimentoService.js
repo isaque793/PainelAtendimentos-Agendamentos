@@ -38,30 +38,22 @@ export function buscarAtendimentoPorId(atendimentoId) {
 
 export function convocarAtendimento(
   atendimentoId,
-  servidorResponsavel
+  dados
 ) {
   return apiRequest(
     `/atendimentos/${atendimentoId}/convocar`,
     {
       method: "PATCH",
-      body: JSON.stringify({
-        servidor_responsavel: servidorResponsavel,
-      }),
+      body: JSON.stringify(dados),
     }
   );
 }
 
-export function iniciarAtendimento(
-  atendimentoId,
-  servidorResponsavel
-) {
+export function iniciarAtendimento(atendimentoId) {
   return apiRequest(
     `/atendimentos/${atendimentoId}/iniciar`,
     {
       method: "PATCH",
-      body: JSON.stringify({
-        servidor_responsavel: servidorResponsavel,
-      }),
     }
   );
 }

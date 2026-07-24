@@ -127,10 +127,6 @@ class AtendimentoService:
     def listar_chamada_publica(
         self,
     ) -> list[dict]:
-        """
-        Retorna apenas os dados necessários para a
-        tela pública de chamadas.
-        """
         atendimentos = (
             self.repository.listar_chamadas_recentes()
         )
@@ -139,8 +135,8 @@ class AtendimentoService:
             {
                 "id": atendimento.id,
                 "nome": atendimento.cidadao.nome,
-                "numero_sala": atendimento.numero_sala,
                 "setor": atendimento.setor.nome,
+                "numero_sala": atendimento.numero_sala,
                 "status": atendimento.status,
                 "chamado_em": atendimento.data_convocacao,
             }
@@ -214,36 +210,31 @@ class AtendimentoService:
         )
 
     def iniciar(
-        self,
-        atendimento_id: int,
-        dados: AtendimentoIniciar,
-    ) -> Atendimento:
-        atendimento = self.buscar_por_id(
-            atendimento_id
-        )
-
-        if atendimento.status not in [
-            StatusAtendimento.AGUARDANDO.value,
-            StatusAtendimento.CONVOCADO.value,
-        ]:
-            raise ValueError(
-                "Este atendimento não pode ser iniciado."
+            self,
+            atendimento_id: int,
+        ) -> Atendimento:
+            atendimento = self.buscar_por_id(
+                atendimento_id
             )
 
-        atendimento.status = (
-            StatusAtendimento.EM_ATENDIMENTO.value
-        )
+            if (
+                atendimento.status
+                != StatusAtendimento.CONVOCADO.value
+            ):
+                raise ValueError(
+                    "Somente atendimentos convocados "
+                    "podem ser iniciados."
+                )
 
-        atendimento.data_inicio = datetime.now()
-
-        if atendimento.data_convocacao is None:
-            atendimento.data_convocacao = (
-                datetime.now()
+            atendimento.status = (
+                StatusAtendimento.EM_ATENDIMENTO.value
             )
 
-        return self.repository.salvar(
-            atendimento
-        )
+            atendimento.data_inicio = datetime.now()
+
+            return self.repository.salvar(
+                atendimento
+    )
 
     def finalizar(
         self,
