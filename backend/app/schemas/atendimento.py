@@ -15,43 +15,77 @@ class CidadaoResumo(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 class AtendimentoCreate(BaseModel):
     cidadao_id: int
+    setor_id: int
+
     assunto: str = Field(
         min_length=3,
         max_length=150,
     )
+
     descricao: str | None = None
-    prioridade: PrioridadeAtendimento = PrioridadeAtendimento.NORMAL
+
+    prioridade: PrioridadeAtendimento = (
+        PrioridadeAtendimento.NORMAL
+    )
+
+
+class AtendimentoCreate(BaseModel):
+    cidadao_id: int
+    setor_id: int
+
+    assunto: str = Field(
+        min_length=3,
+        max_length=150,
+    )
+
+    descricao: str | None = None
+
+    prioridade: PrioridadeAtendimento = (
+        PrioridadeAtendimento.NORMAL
+    )
 
 
 class AtendimentoResponse(BaseModel):
     id: int
     cidadao_id: int
-    cidadao: CidadaoResumo
+    setor_id: int
+
     assunto: str
     descricao: str | None
-    prioridade: PrioridadeAtendimento
-    status: StatusAtendimento
+    prioridade: str
+    status: str
+
+    servidor_nome: str | None
+    servidor_masp: str | None
+    numero_sala: str | None
 
     data_solicitacao: datetime
     data_convocacao: datetime | None
     data_inicio: datetime | None
     data_finalizacao: datetime | None
 
-    servidor_responsavel: str | None
     observacoes: str | None
     resultado: str | None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 
 class AtendimentoConvocar(BaseModel):
-    servidor_responsavel: str = Field(
+    servidor_nome: str = Field(
         min_length=3,
         max_length=150,
     )
+
+    servidor_masp: str = Field(
+        min_length=3,
+        max_length=30,
+    )
+
+    setor_id: int
 
 
 class AtendimentoIniciar(BaseModel):

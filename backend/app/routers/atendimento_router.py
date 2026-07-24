@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
+from app.services.atendimento_service import AtendimentoService
 from app.database.connection import get_db
 from app.repositories.atendimento_repository import AtendimentoRepository
 from app.repositories.cidadao_repository import CidadaoRepository
+from app.repositories.setor_repository import SetorRepository
+
 from app.schemas.atendimento import (
     AtendimentoCancelar,
     AtendimentoConvocar,
@@ -13,7 +15,10 @@ from app.schemas.atendimento import (
     AtendimentoResponse,
     ChamadaPublica,
 )
-from app.services.atendimento_service import AtendimentoService
+
+from app.repositories.setor_repository import (
+    SetorRepository,
+)
 
 
 router = APIRouter(
@@ -22,13 +27,26 @@ router = APIRouter(
 )
 
 
-def criar_service(db: Session) -> AtendimentoService:
-    atendimento_repository = AtendimentoRepository(db)
+def criar_service(
+    db: Session,
+) -> AtendimentoService:
+    repository = AtendimentoRepository(db)
     cidadao_repository = CidadaoRepository(db)
+    setor_repository = SetorRepository(db)
 
     return AtendimentoService(
-        repository=atendimento_repository,
+        repository=repository,
         cidadao_repository=cidadao_repository,
+        setor_repository=setor_repository,
+    )
+
+def obter_service(
+    db: Session = Depends(get_db),
+) -> AtendimentoService:
+    return AtendimentoService(
+        repository=AtendimentoRepository(db),
+        cidadao_repository=CidadaoRepository(db),
+        setor_repository=SetorRepository(db),
     )
 
 
@@ -86,11 +104,19 @@ def listar_atendimentos(
     response_model=list[AtendimentoResponse],
 )
 def listar_fila(
-    db: Session = Depends(get_db),
+    setor_id: int,
+    service: AtendimentoService = Depends(
+        obter_service
+    ),
 ):
-    service = criar_service(db)
+    try:
+        return service.listar_fila(setor_id)
 
-    return service.listar_fila()
+    except ValueError as erro:
+        raise HTTPException(
+            status_code=400,
+            detail=str(erro),
+        ) from erro
 
 
 @router.get(
@@ -98,11 +124,21 @@ def listar_fila(
     response_model=list[AtendimentoResponse],
 )
 def listar_aguardando(
-    db: Session = Depends(get_db),
+    setor_id: int,
+    service: AtendimentoService = Depends(
+        obter_service
+    ),
 ):
-    service = criar_service(db)
+    try:
+        return service.listar_aguardando(
+            setor_id
+        )
 
-    return service.listar_aguardando()
+    except ValueError as erro:
+        raise HTTPException(
+            status_code=400,
+            detail=str(erro),
+        ) from erro
 
 
 @router.get(
@@ -110,11 +146,21 @@ def listar_aguardando(
     response_model=list[AtendimentoResponse],
 )
 def listar_em_atendimento(
-    db: Session = Depends(get_db),
+    setor_id: int,
+    service: AtendimentoService = Depends(
+        obter_service
+    ),
 ):
-    service = criar_service(db)
+    try:
+        return service.listar_em_atendimento(
+            setor_id
+        )
 
-    return service.listar_em_atendimento()
+    except ValueError as erro:
+        raise HTTPException(
+            status_code=400,
+            detail=str(erro),
+        ) from erro
 
 
 @router.get(
@@ -122,11 +168,21 @@ def listar_em_atendimento(
     response_model=list[AtendimentoResponse],
 )
 def listar_finalizados(
-    db: Session = Depends(get_db),
+    setor_id: int,
+    service: AtendimentoService = Depends(
+        obter_service
+    ),
 ):
-    service = criar_service(db)
+    try:
+        return service.listar_finalizados(
+            setor_id
+        )
 
-    return service.listar_finalizados()
+    except ValueError as erro:
+        raise HTTPException(
+            status_code=400,
+            detail=str(erro),
+        ) from erro
 
 
 @router.get(
@@ -156,10 +212,10 @@ def buscar_atendimento(
 def convocar_atendimento(
     atendimento_id: int,
     dados: AtendimentoConvocar,
-    db: Session = Depends(get_db),
+    service: AtendimentoService = Depends(
+        obter_service
+    ),
 ):
-    service = criar_service(db)
-
     try:
         return service.convocar(
             atendimento_id,
@@ -170,7 +226,7 @@ def convocar_atendimento(
         raise HTTPException(
             status_code=400,
             detail=str(erro),
-        )
+        ) from erro
 
 
 @router.patch(

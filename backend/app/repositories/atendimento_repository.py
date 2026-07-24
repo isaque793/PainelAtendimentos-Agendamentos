@@ -1,8 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-
 from app.models.atendimento import Atendimento, StatusAtendimento
-from app.schemas.atendimento import AtendimentoCreate
+
 
 
 class AtendimentoRepository:
@@ -10,15 +9,10 @@ class AtendimentoRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def criar(self, dados: AtendimentoCreate) -> Atendimento:
-        atendimento = Atendimento(
-            cidadao_id=dados.cidadao_id,
-            assunto=dados.assunto,
-            descricao=dados.descricao,
-            prioridade=dados.prioridade.value,
-            status=StatusAtendimento.AGUARDANDO.value,
-        )
-
+    def criar(
+    self,
+    atendimento: Atendimento,
+) -> Atendimento:
         self.db.add(atendimento)
         self.db.commit()
         self.db.refresh(atendimento)
@@ -38,16 +32,22 @@ class AtendimentoRepository:
             self.db.scalars(comando).all()
         )
 
-    def listar_fila(self) -> list[Atendimento]:
+    def listar_fila(
+        self,
+        setor_id: int,
+    ) -> list[Atendimento]:
+
+    
         comando = (
             select(Atendimento)
             .where(
+                Atendimento.setor_id == setor_id,
                 Atendimento.status.in_(
                     [
                         StatusAtendimento.AGUARDANDO.value,
                         StatusAtendimento.CONVOCADO.value,
                     ]
-                )
+                ),
             )
             .order_by(
                 Atendimento.prioridade.desc(),
@@ -59,16 +59,19 @@ class AtendimentoRepository:
             self.db.scalars(comando).all()
         )
 
-    def listar_aguardando(self) -> list[Atendimento]:
+    def listar_aguardando(
+        self,
+        setor_id: int,
+    ) -> list[Atendimento]:
         comando = (
             select(Atendimento)
             .where(
                 Atendimento.status
-                == StatusAtendimento.AGUARDANDO.value
+                == StatusAtendimento.AGUARDANDO.value,
+                Atendimento.setor_id == setor_id,
             )
             .order_by(
-                Atendimento.prioridade.desc(),
-                Atendimento.data_solicitacao.asc(),
+                Atendimento.data_solicitacao
             )
         )
 
@@ -76,28 +79,44 @@ class AtendimentoRepository:
             self.db.scalars(comando).all()
         )
 
-    def listar_em_atendimento(self) -> list[Atendimento]:
+    def listar_em_atendimento(
+    self,
+    setor_id: int,
+) -> list[Atendimento]:
         comando = (
             select(Atendimento)
             .where(
-                Atendimento.status
-                == StatusAtendimento.EM_ATENDIMENTO.value
+                Atendimento.setor_id == setor_id,
+                Atendimento.status.in_(
+                    [
+                        StatusAtendimento.CONVOCADO.value,
+                        StatusAtendimento.EM_ATENDIMENTO.value,
+                    ]
+                ),
             )
-            .order_by(Atendimento.data_inicio.asc())
+            .order_by(
+                Atendimento.data_convocacao.asc()
+            )
         )
 
         return list(
             self.db.scalars(comando).all()
         )
 
-    def listar_finalizados(self) -> list[Atendimento]:
+    def listar_finalizados(
+    self,
+    setor_id: int,
+    ) -> list[Atendimento]:
         comando = (
             select(Atendimento)
             .where(
+                Atendimento.setor_id == setor_id,
                 Atendimento.status
-                == StatusAtendimento.FINALIZADO.value
+                == StatusAtendimento.FINALIZADO.value,
             )
-            .order_by(Atendimento.data_finalizacao.desc())
+            .order_by(
+                Atendimento.data_finalizacao.desc()
+            )
         )
 
         return list(
