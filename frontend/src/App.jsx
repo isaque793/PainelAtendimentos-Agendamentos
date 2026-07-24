@@ -23,6 +23,9 @@ import AtendimentoServidor
 import PainelChamada
     from "./pages/PainelChamada/PainelChamada";
 
+ import AcessoServidor
+    from "./pages/AcessoServidor/AcessoServidor";
+
 
 function App() {
     return (
@@ -59,6 +62,11 @@ function App() {
                 <Route
                    path="/chamada"
                    element={<PainelChamada />}
+                />
+
+                <Route
+                    path="/direcao/acesso"
+                    element={<AcessoServidor />}
                 />
 
 

@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { cadastrarCidadao } from "../../services/cidadaoService";
-import { cadastrarAtendimento } from "../../services/atendimentoService";
+import ConfirmationNumberOutlinedIcon
+    from "@mui/icons-material/ConfirmationNumberOutlined";
 
 import {
     Alert,
@@ -9,6 +9,7 @@ import {
     Button,
     Card,
     CardContent,
+    CircularProgress,
     Container,
     FormControl,
     InputLabel,
@@ -16,21 +17,29 @@ import {
     Select,
     Stack,
     TextField,
-    Typography
+    Typography,
 } from "@mui/material";
 
-import ConfirmationNumberOutlinedIcon
-    from "@mui/icons-material/ConfirmationNumberOutlined";
+import { cadastrarAtendimento } from "../../services/atendimentoService";
+import { cadastrarCidadao } from "../../services/cidadaoService";
+import { listarSetoresPublicos } from "../../services/setorService";
 
 import "./AtendimentoPublico.css";
 
+
 function AtendimentoPublico() {
+    const [setores, setSetores] = useState([]);
+    const [carregandoSetores, setCarregandoSetores] =
+        useState(true);
+    const [erroSetores, setErroSetores] = useState("");
+
     const [formulario, setFormulario] = useState({
         nome: "",
         cpf: "",
         telefone: "",
         tipoAtendimento: "",
-        descricao: ""
+        descricao: "",
+        setorId: "",
     });
 
     const [solicitacaoConcluida, setSolicitacaoConcluida] =
@@ -38,87 +47,141 @@ function AtendimentoPublico() {
 
     const [enviando, setEnviando] = useState(false);
     const [mensagemErro, setMensagemErro] = useState("");
-    
+
+    useEffect(() => {
+        async function carregarSetores() {
+            try {
+                setCarregandoSetores(true);
+                setErroSetores("");
+
+                const dados = await listarSetoresPublicos();
+
+                setSetores(dados);
+            } catch (erro) {
+                console.error(
+                    "Erro ao carregar setores:",
+                    erro
+                );
+
+                setErroSetores(
+                    "Não foi possível carregar os setores disponíveis."
+                );
+            } finally {
+                setCarregandoSetores(false);
+            }
+        }
+
+        carregarSetores();
+    }, []);
+
     function atualizarCampo(evento) {
         const { name, value } = evento.target;
 
         setFormulario((dadosAtuais) => ({
             ...dadosAtuais,
-            [name]: value
+            [name]: value,
         }));
     }
-    
 
     async function solicitarAtendimento(evento) {
-    evento.preventDefault();
+        evento.preventDefault();
 
-    try {
-        setEnviando(true);
-        setMensagemErro("");
-        setSolicitacaoConcluida(false);
+        if (!formulario.setorId) {
+            setMensagemErro(
+                "Selecione o setor responsável pelo atendimento."
+            );
 
-      const cidadaoCriado = await cadastrarCidadao({
-    nome: formulario.nome.trim(),
-    cpf: formulario.cpf.replace(/\D/g, "") || null,
-    telefone:
-        formulario.telefone.replace(/\D/g, "") || null,
-    email: null,
-    masp: null
-});
+            return;
+        }
 
-console.log("Resposta do cidadão:", cidadaoCriado);
+        try {
+            setEnviando(true);
+            setMensagemErro("");
+            setSolicitacaoConcluida(false);
 
-if (!cidadaoCriado?.id) {
-    throw new Error(
-        "O backend cadastrou o cidadão, mas não retornou o ID."
-    );
-}
+            const cidadaoCriado = await cadastrarCidadao({
+                nome: formulario.nome.trim(),
+                cpf:
+                    formulario.cpf.replace(/\D/g, "")
+                    || null,
+                telefone:
+                    formulario.telefone.replace(/\D/g, "")
+                    || null,
+                email: null,
+                masp: null,
+            });
 
-const dadosAtendimento = {
-    cidadao_id: cidadaoCriado.id,
-    assunto: formulario.tipoAtendimento,
-    descricao: formulario.descricao.trim() || null,
-    prioridade: "NORMAL"
-};
+            console.log(
+                "Resposta do cidadão:",
+                cidadaoCriado
+            );
 
-console.log(
-    "Dados enviados ao atendimento:",
-    dadosAtendimento
-);
+            if (!cidadaoCriado?.id) {
+                throw new Error(
+                    "O backend cadastrou o cidadão, "
+                    + "mas não retornou o ID."
+                );
+            }
 
-const atendimentoCriado =
-    await cadastrarAtendimento(dadosAtendimento);
+            const dadosAtendimento = {
+                cidadao_id: cidadaoCriado.id,
+                setor_id: Number(formulario.setorId),
+                assunto: formulario.tipoAtendimento,
+                descricao:
+                    formulario.descricao.trim()
+                    || null,
+                prioridade: "NORMAL",
+            };
 
-console.log(
-    "Atendimento criado:",
-    atendimentoCriado
-);
+            console.log(
+                "Dados enviados ao atendimento:",
+                dadosAtendimento
+            );
 
-        setSolicitacaoConcluida(true);
+            const atendimentoCriado =
+                await cadastrarAtendimento(
+                    dadosAtendimento
+                );
 
-        setFormulario({
-            nome: "",
-            cpf: "",
-            telefone: "",
-            tipoAtendimento: "",
-            descricao: ""
-        });
-    } catch (erro) {
-        console.error("Erro ao solicitar atendimento:", erro);
-        setMensagemErro(erro.message);
-    } finally {
-        setEnviando(false);
+            console.log(
+                "Atendimento criado:",
+                atendimentoCriado
+            );
+
+            setSolicitacaoConcluida(true);
+
+            setFormulario({
+                nome: "",
+                cpf: "",
+                telefone: "",
+                tipoAtendimento: "",
+                descricao: "",
+                setorId: "",
+            });
+        } catch (erro) {
+            console.error(
+                "Erro ao solicitar atendimento:",
+                erro
+            );
+
+            setMensagemErro(
+                erro.message
+                || "Não foi possível registrar o atendimento."
+            );
+        } finally {
+            setEnviando(false);
+        }
     }
-}
-    
-
 
     return (
         <Box className="public-page">
             <Box className="public-header">
                 <Container maxWidth="lg">
-                    <Typography variant="h5" fontWeight="bold">
-                        Painel de Atendimento 
+                    <Typography
+                        variant="h5"
+                        fontWeight="bold"
+                    >
+                        Painel de Atendimento
                     </Typography>
 
                     <Typography variant="body2">
@@ -127,7 +190,10 @@ console.log(
                 </Container>
             </Box>
 
-            <Container maxWidth="md" className="public-content">
+            <Container
+                maxWidth="md"
+                className="public-content"
+            >
                 <Box className="public-introduction">
                     <Typography
                         variant="h3"
@@ -138,8 +204,8 @@ console.log(
                     </Typography>
 
                     <Typography color="text.secondary">
-                        Preencha os dados abaixo para entrar na fila de
-                        atendimento.
+                        Preencha os dados abaixo para entrar
+                        na fila de atendimento.
                     </Typography>
                 </Box>
 
@@ -148,18 +214,17 @@ console.log(
                         severity="success"
                         className="success-message"
                     >
-                        Solicitação registrada! Em breve exibiremos aqui
-                        sua senha e sua posição na fila.
+                        Solicitação registrada com sucesso!
                     </Alert>
                 )}
 
                 {mensagemErro && (
-                   <Alert
-                       severity="error"
-                       className="success-message"
-    >
-                      {mensagemErro}
-                   </Alert>
+                    <Alert
+                        severity="error"
+                        className="success-message"
+                    >
+                        {mensagemErro}
+                    </Alert>
                 )}
 
                 <Card className="request-card">
@@ -181,8 +246,9 @@ console.log(
                                     variant="body2"
                                     color="text.secondary"
                                 >
-                                    Os campos marcados são necessários para
-                                    gerar sua senha.
+                                    Os campos marcados são
+                                    necessários para registrar
+                                    sua solicitação.
                                 </Typography>
                             </Box>
                         </Box>
@@ -220,7 +286,58 @@ console.log(
                                     />
                                 </Box>
 
-                                <FormControl fullWidth required>
+                                {carregandoSetores && (
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 1,
+                                        }}
+                                    >
+                                        <CircularProgress
+                                            size={20}
+                                        />
+
+                                        <Typography
+                                            variant="body2"
+                                        >
+                                            Carregando setores...
+                                        </Typography>
+                                    </Box>
+                                )}
+
+                                {erroSetores && (
+                                    <Alert severity="error">
+                                        {erroSetores}
+                                    </Alert>
+                                )}
+
+                                <TextField
+                                    select
+                                    fullWidth
+                                    required
+                                    label="Setor"
+                                    name="setorId"
+                                    value={formulario.setorId}
+                                    onChange={atualizarCampo}
+                                    disabled={carregandoSetores}
+                                >
+                                    {setores.map((setor) => (
+                                        <MenuItem
+                                            key={setor.id}
+                                            value={setor.id}
+                                        >
+                                            {setor.nome}
+                                            {" "}
+                                            ({setor.sigla})
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+
+                                <FormControl
+                                    fullWidth
+                                    required
+                                >
                                     <InputLabel>
                                         Tipo de atendimento
                                     </InputLabel>
@@ -228,29 +345,45 @@ console.log(
                                     <Select
                                         label="Tipo de atendimento"
                                         name="tipoAtendimento"
-                                        value={formulario.tipoAtendimento}
+                                        value={
+                                            formulario
+                                                .tipoAtendimento
+                                        }
                                         onChange={atualizarCampo}
                                     >
-                                        <MenuItem value="documentacao">
-                                            Entrega ou consulta de documentação
+                                        <MenuItem
+                                            value="documentacao"
+                                        >
+                                            Entrega ou consulta
+                                            de documentação
                                         </MenuItem>
 
-                                        <MenuItem value="vida-escolar">
+                                        <MenuItem
+                                            value="vida-escolar"
+                                        >
                                             Vida escolar
                                         </MenuItem>
 
-                                        <MenuItem value="servidor">
-                                            Assuntos relacionados a servidor
+                                        <MenuItem
+                                            value="servidor"
+                                        >
+                                            Assuntos relacionados
+                                            a servidor
                                         </MenuItem>
 
-                                        <MenuItem value="outros">
+                                        <MenuItem
+                                            value="outros"
+                                        >
                                             Outros assuntos
                                         </MenuItem>
                                     </Select>
                                 </FormControl>
 
                                 <TextField
-                                    label="Descreva brevemente sua solicitação"
+                                    label={
+                                        "Descreva brevemente "
+                                        + "sua solicitação"
+                                    }
                                     name="descricao"
                                     value={formulario.descricao}
                                     onChange={atualizarCampo}
@@ -260,16 +393,19 @@ console.log(
                                 />
 
                                 <Button
-                                   type="submit"
-                                   variant="contained"
-                                   size="large"
-                                   fullWidth
-                                   disabled={enviando}
->
-                                   {enviando
-                                      ? "Enviando solicitação..."
-                                      : "Entrar na fila de atendimento"
+                                    type="submit"
+                                    variant="contained"
+                                    size="large"
+                                    fullWidth
+                                    disabled={
+                                        enviando
+                                        || carregandoSetores
+                                        || Boolean(erroSetores)
                                     }
+                                >
+                                    {enviando
+                                        ? "Enviando solicitação..."
+                                        : "Entrar na fila de atendimento"}
                                 </Button>
                             </Stack>
                         </Box>
@@ -281,8 +417,8 @@ console.log(
                     variant="body2"
                     color="text.secondary"
                 >
-                    Seus dados serão utilizados exclusivamente para organizar
-                    e realizar o atendimento solicitado.
+                    Seus dados serão utilizados exclusivamente
+                    para organizar e realizar o atendimento solicitado.
                 </Typography>
             </Container>
         </Box>

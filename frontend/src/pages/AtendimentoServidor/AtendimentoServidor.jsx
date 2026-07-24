@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   Alert,
@@ -40,28 +41,26 @@ import {
 } from "../../services/atendimentoService";
 
 
-export default function AtendimentoServidor() {
-  const [fila, setFila] = useState([]);
+  export default function AtendimentoServidor() {
+  const navigate = useNavigate();
 
+  const acessoServidor = JSON.parse(
+    sessionStorage.getItem("acessoServidor")
+  );
+
+  const setorId = acessoServidor?.setor_id;
+
+  const [fila, setFila] = useState([]);
   const [atendimentoAtual, setAtendimentoAtual] =
     useState(null);
-
   const [finalizados, setFinalizados] = useState([]);
-
   const [observacoes, setObservacoes] = useState("");
-
   const [carregando, setCarregando] = useState(true);
-
   const [erro, setErro] = useState("");
-
   const [ultimaAtualizacao, setUltimaAtualizacao] =
     useState(null);
 
-  /*
-   * Temporariamente usamos um nome fixo.
-   * Futuramente esse valor virá do usuário autenticado.
-   */
-  const servidorResponsavel = "Servidor Teste";
+
 
 
   function obterMensagemErro(error) {
@@ -77,73 +76,58 @@ export default function AtendimentoServidor() {
   }
 
 
-  const carregarPainel = useCallback(
-    async (exibirCarregamento = true) => {
-      try {
-        if (exibirCarregamento) {
-          setCarregando(true);
-        }
 
-        setErro("");
+ const carregarPainel = useCallback(
+  async function carregarPainel() {
+    if (!setorId) {
+      navigate("/direcao/acesso");
+      return;
+    }
 
-        const [
-          filaRecebida,
-          atendimentosEmAndamento,
-          atendimentosFinalizados,
-        ] = await Promise.all([
-          listarFilaAtendimentos(),
-          listarAtendimentosEmAndamento(),
-          listarAtendimentosFinalizados(),
-        ]);
+    try {
+      setCarregando(true);
+      setErro("");
 
-        setFila(
-          Array.isArray(filaRecebida)
-            ? filaRecebida
-            : []
-        );
+      const [
+        filaRecebida,
+        emAtendimento,
+        finalizadosRecebidos,
+      ] = await Promise.all([
+        listarFilaAtendimentos(setorId),
+        listarAtendimentosEmAndamento(setorId),
+        listarAtendimentosFinalizados(setorId),
+      ]);
 
-        const listaEmAndamento =
-          Array.isArray(atendimentosEmAndamento)
-            ? atendimentosEmAndamento
-            : [];
+      setFila(filaRecebida);
 
-        setAtendimentoAtual(
-          listaEmAndamento.length > 0
-            ? listaEmAndamento[0]
-            : null
-        );
+      setAtendimentoAtual(
+        Array.isArray(emAtendimento)
+          ? emAtendimento[0] ?? null
+          : emAtendimento
+      );
 
-        setFinalizados(
-          Array.isArray(atendimentosFinalizados)
-            ? atendimentosFinalizados
-            : []
-        );
+      setFinalizados(finalizadosRecebidos);
+      setUltimaAtualizacao(new Date());
+    } catch (error) {
+      console.error(
+        "Erro ao carregar painel de atendimentos:",
+        error
+      );
 
-        setUltimaAtualizacao(new Date());
-      } catch (error) {
-        console.error(
-          "Erro ao carregar painel de atendimentos:",
-          error
-        );
-
-        setErro(
-          obterMensagemErro(error) ||
-            "Não foi possível carregar os atendimentos."
-        );
-      } finally {
-        if (exibirCarregamento) {
-          setCarregando(false);
-        }
-      }
-    },
-    []
-  );
+      setErro(
+        obterMensagemErro(error)
+      );
+    } finally {
+      setCarregando(false);
+    }
+  },
+  [navigate, setorId]
+);
 
 
   useEffect(() => {
-    carregarPainel();
-  }, [carregarPainel]);
-
+  carregarPainel();
+}, [carregarPainel]);
 
   async function handleChamar(atendimento) {
     try {
@@ -151,13 +135,17 @@ export default function AtendimentoServidor() {
       setErro("");
 
       await convocarAtendimento(
-        atendimento.id,
-        servidorResponsavel
-      );
+  atendimento.id,
+  {
+    servidor_nome: acessoServidor.servidor_nome,
+    servidor_masp: acessoServidor.servidor_masp,
+    setor_id: acessoServidor.setor_id,
+  }
+);
 
       setObservacoes("");
 
-      await carregarPainel(false);
+      await carregarPainel();
     } catch (error) {
       console.error(
         "Erro ao convocar atendimento:",
@@ -174,32 +162,31 @@ export default function AtendimentoServidor() {
   }
 
 
-  async function handleIniciar(atendimento) {
-    try {
-      setCarregando(true);
-      setErro("");
+async function handleIniciar(atendimento) {
+  try {
+    setCarregando(true);
+    setErro("");
 
-      await iniciarAtendimento(
-        atendimento.id,
-        servidorResponsavel
-      );
+    await iniciarAtendimento(
+      atendimento.id,
+      {}
+    );
 
-      await carregarPainel(false);
-    } catch (error) {
-      console.error(
-        "Erro ao iniciar atendimento:",
-        error
-      );
+    await carregarPainel();
+  } catch (error) {
+    console.error(
+      "Erro ao iniciar atendimento:",
+      error
+    );
 
-      setErro(
-        obterMensagemErro(error) ||
-          "Não foi possível iniciar o atendimento."
-      );
-    } finally {
-      setCarregando(false);
-    }
+    setErro(
+      obterMensagemErro(error)
+      || "Não foi possível iniciar o atendimento."
+    );
+  } finally {
+    setCarregando(false);
   }
-
+}
 
   async function handleFinalizar(
     atendimento,
@@ -217,7 +204,7 @@ export default function AtendimentoServidor() {
 
       setObservacoes("");
 
-      await carregarPainel(false);
+      await carregarPainel();
     } catch (error) {
       console.error(
         "Erro ao finalizar atendimento:",
@@ -232,6 +219,7 @@ export default function AtendimentoServidor() {
       setCarregando(false);
     }
   }
+  
 
 
   return (

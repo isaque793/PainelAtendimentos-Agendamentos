@@ -8,20 +8,28 @@ export function cadastrarAtendimento(dados) {
   });
 }
 
-export function listarFilaAtendimentos() {
-  return apiRequest("/atendimentos/fila");
+export function listarFilaAtendimentos(setorId) {
+  return apiRequest(
+    `/atendimentos/fila?setor_id=${setorId}`
+  );
 }
 
-export function listarAtendimentosAguardando() {
-  return apiRequest("/atendimentos/aguardando");
+export function listarAtendimentosAguardando(setorId) {
+  return apiRequest(
+    `/atendimentos/aguardando?setor_id=${setorId}`
+  );
 }
 
-export function listarAtendimentosEmAndamento() {
-  return apiRequest("/atendimentos/em-atendimento");
+export function listarAtendimentosEmAndamento(setorId) {
+  return apiRequest(
+    `/atendimentos/em-atendimento?setor_id=${setorId}`
+  );
 }
 
-export function listarAtendimentosFinalizados() {
-  return apiRequest("/atendimentos/finalizados");
+export function listarAtendimentosFinalizados(setorId) {
+  return apiRequest(
+    `/atendimentos/finalizados?setor_id=${setorId}`
+  );
 }
 
 export function buscarAtendimentoPorId(atendimentoId) {
