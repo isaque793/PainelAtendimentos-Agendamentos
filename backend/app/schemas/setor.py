@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.models.perfil_setor import PerfilSetor
+
 
 class SetorBase(BaseModel):
     nome: str = Field(
@@ -23,6 +25,8 @@ class SetorCreate(SetorBase):
         min_length=4,
         max_length=100,
     )
+
+    perfil: PerfilSetor = PerfilSetor.OPERADOR
 
 
 class SetorUpdate(BaseModel):
@@ -52,18 +56,29 @@ class SetorUpdate(BaseModel):
 
     ativo: bool | None = None
 
+    perfil: PerfilSetor | None = None
+
 
 class SetorResponse(SetorBase):
     id: int
     ativo: bool
+    perfil: PerfilSetor
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class SetorPublico(BaseModel):
+    """
+    Schema usado na lista de setores tanto do totem (solicitação de
+    atendimento) quanto da tela de login do servidor. O campo `perfil`
+    vai junto para que cada tela decida o que fazer com o setor de
+    Direção: o totem o esconde (cidadão não solicita atendimento à
+    Direção), a tela de login o mostra normalmente.
+    """
     id: int
     nome: str
     sigla: str
+    perfil: PerfilSetor
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -93,3 +108,6 @@ class SetorAcessoResponse(BaseModel):
     numero_sala: str
     servidor_nome: str
     servidor_masp: str
+    perfil: PerfilSetor
+    access_token: str
+    token_type: str = "bearer"

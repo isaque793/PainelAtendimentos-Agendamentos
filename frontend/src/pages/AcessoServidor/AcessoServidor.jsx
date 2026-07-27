@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
@@ -9,6 +9,7 @@ import {
   Button,
   Card,
   CardContent,
+  Chip,
   CircularProgress,
   Container,
   MenuItem,
@@ -22,9 +23,17 @@ import {
   validarAcessoSetor,
 } from "../../services/setorService";
 
+import { apenasDigitos, mascararMasp } from "../../utils/formatacao";
+
 
 function AcessoServidor() {
   const navigate = useNavigate();
+  const localizacao = useLocation();
+
+  // Quando o RotaProtegida redireciona pra cá, ele guarda em
+  // state.next a página que a pessoa tentou acessar — depois do login
+  // ela volta pra lá, em vez de sempre cair no dashboard genérico.
+  const destinoAposLogin = localizacao.state?.next || "/direcao";
 
   const [setores, setSetores] = useState([]);
   const [carregandoSetores, setCarregandoSetores] =
@@ -69,9 +78,14 @@ function AcessoServidor() {
   function atualizarCampo(evento) {
     const { name, value } = evento.target;
 
+    // O MASP é digitado com a máscara oficial (1234567-8), mas segue
+    // para a API só com os dígitos — é assim que ele está no cadastro.
+    const valorFormatado =
+      name === "servidorMasp" ? mascararMasp(value) : value;
+
     setFormulario((dadosAtuais) => ({
       ...dadosAtuais,
-      [name]: value,
+      [name]: valorFormatado,
     }));
   }
 
@@ -86,8 +100,7 @@ function AcessoServidor() {
         setor_id: Number(formulario.setorId),
         servidor_nome:
           formulario.servidorNome.trim(),
-        servidor_masp:
-          formulario.servidorMasp.trim(),
+        servidor_masp: apenasDigitos(formulario.servidorMasp),
         senha: formulario.senha,
       });
 
@@ -96,7 +109,7 @@ function AcessoServidor() {
         JSON.stringify(acesso)
       );
 
-      navigate("/direcao/atendimentos");
+      navigate(destinoAposLogin, { replace: true });
     } catch (erro) {
       console.error(
         "Erro ao validar acesso:",
@@ -118,7 +131,7 @@ function AcessoServidor() {
         minHeight: "100vh",
         display: "flex",
         alignItems: "center",
-        backgroundColor: "#f4f6f8",
+        backgroundColor: "background.default",
         py: 4,
       }}
     >
@@ -177,6 +190,7 @@ function AcessoServidor() {
                   <TextField
                     label="MASP"
                     name="servidorMasp"
+                    placeholder="1234567-8"
                     value={formulario.servidorMasp}
                     onChange={atualizarCampo}
                     required
@@ -198,7 +212,26 @@ function AcessoServidor() {
                         key={setor.id}
                         value={setor.id}
                       >
-                        {setor.nome} ({setor.sigla})
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          alignItems="center"
+                          sx={{ width: "100%" }}
+                        >
+                          <span>
+                            {setor.nome} ({setor.sigla})
+                          </span>
+
+                          {setor.perfil === "DIRECAO" && (
+                            <Chip
+                              label="Direção"
+                              size="small"
+                              color="primary"
+                              variant="outlined"
+                              sx={{ ml: "auto" }}
+                            />
+                          )}
+                        </Stack>
                       </MenuItem>
                     ))}
                   </TextField>

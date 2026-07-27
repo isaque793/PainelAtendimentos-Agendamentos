@@ -1,4 +1,4 @@
-from app.core.security import gerar_hash_senha, verificar_senha
+from app.core.security import gerar_hash_senha, gerar_token_acesso, verificar_senha
 from app.models.setor import Setor
 from app.repositories.setor_repository import SetorRepository
 from app.schemas.setor import (
@@ -35,6 +35,7 @@ class SetorService:
             numero_sala=numero_sala,
             senha_hash=gerar_hash_senha(dados.senha),
             ativo=True,
+            perfil=dados.perfil.value,
         )
 
         return self.repository.criar(setor)
@@ -119,6 +120,9 @@ class SetorService:
                 alteracoes["senha"]
             )
 
+        if "perfil" in alteracoes:
+            setor.perfil = alteracoes["perfil"].value
+
         return self.repository.atualizar(setor)
 
     def validar_acesso(
@@ -154,6 +158,13 @@ class SetorService:
             .strip()
         )
 
+        token = gerar_token_acesso({
+            "setor_id": setor.id,
+            "servidor_nome": servidor_nome,
+            "servidor_masp": servidor_masp,
+            "perfil": setor.perfil,
+        })
+
         return SetorAcessoResponse(
             setor_id=setor.id,
             setor_nome=setor.nome,
@@ -161,4 +172,6 @@ class SetorService:
             numero_sala=setor.numero_sala,
             servidor_nome=servidor_nome,
             servidor_masp=servidor_masp,
+            perfil=setor.perfil,
+            access_token=token,
         )

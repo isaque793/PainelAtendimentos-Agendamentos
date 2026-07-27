@@ -2,6 +2,7 @@ from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import BaseModel
+from app.models.perfil_setor import PerfilSetor
 
 
 class Setor(BaseModel):
@@ -35,6 +36,16 @@ class Setor(BaseModel):
         Boolean,
         nullable=False,
         default=True,
+    )
+
+    # "OPERADOR" (padrão): enxerga e opera só o próprio setor.
+    # "DIRECAO": enxerga todos os setores e pode gerar relatórios
+    # consolidados (todos juntos) ou de um setor específico.
+    perfil: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default=PerfilSetor.OPERADOR.value,
+        server_default=PerfilSetor.OPERADOR.value,
     )
 
     atendimentos = relationship(

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -40,14 +40,16 @@ import {
   finalizarAtendimento,
 } from "../../services/atendimentoService";
 
+import { obterSessaoServidor } from "../../utils/sessao";
 
-  export default function AtendimentoServidor() {
+// A fila é compartilhada por todo o setor, mas a atualização automática
+// é só pra quem já está logado (evita bater na API sem necessidade).
+const INTERVALO_ATUALIZACAO_MS = 8000;
+
+export default function AtendimentoServidor() {
   const navigate = useNavigate();
 
-  const acessoServidor = JSON.parse(
-    sessionStorage.getItem("acessoServidor")
-  );
-
+  const acessoServidor = useMemo(() => obterSessaoServidor(), []);
   const setorId = acessoServidor?.setor_id;
 
   const [fila, setFila] = useState([]);
@@ -59,9 +61,6 @@ import {
   const [erro, setErro] = useState("");
   const [ultimaAtualizacao, setUltimaAtualizacao] =
     useState(null);
-
-
-
 
   function obterMensagemErro(error) {
     if (typeof error?.message === "string") {
@@ -75,73 +74,90 @@ import {
     return "Ocorreu um erro inesperado.";
   }
 
+  const carregarPainel = useCallback(
+    async function carregarPainel(mostrarCarregando = true) {
+      if (!setorId) {
+        navigate("/direcao/acesso");
+        return;
+      }
 
+      try {
+        if (mostrarCarregando) {
+          setCarregando(true);
+        }
+        setErro("");
 
- const carregarPainel = useCallback(
-  async function carregarPainel() {
-    if (!setorId) {
-      navigate("/direcao/acesso");
-      return;
-    }
+        const [
+          filaRecebida,
+          emAtendimento,
+          finalizadosRecebidos,
+        ] = await Promise.all([
+          listarFilaAtendimentos(setorId),
+          listarAtendimentosEmAndamento(setorId),
+          listarAtendimentosFinalizados(setorId),
+        ]);
 
-    try {
-      setCarregando(true);
-      setErro("");
+        setFila(filaRecebida);
 
-      const [
-        filaRecebida,
-        emAtendimento,
-        finalizadosRecebidos,
-      ] = await Promise.all([
-        listarFilaAtendimentos(setorId),
-        listarAtendimentosEmAndamento(setorId),
-        listarAtendimentosFinalizados(setorId),
-      ]);
+        // Com mais de um servidor logado no mesmo setor, cada tela só
+        // deve mostrar como "meu atendimento atual" o que o PRÓPRIO
+        // servidor logado (pelo MASP guardado na sessão) está tocando —
+        // nunca simplesmente o primeiro item em andamento no setor
+        // inteiro, senão um servidor vê (e pode mexer) no atendimento
+        // que outro colega está conduzindo.
+        const listaEmAtendimento = Array.isArray(emAtendimento)
+          ? emAtendimento
+          : [];
 
-      setFila(filaRecebida);
+        const meuAtendimento =
+          listaEmAtendimento.find(
+            (item) => item.servidor_masp === acessoServidor?.servidor_masp
+          ) || null;
 
-      setAtendimentoAtual(
-        Array.isArray(emAtendimento)
-          ? emAtendimento[0] ?? null
-          : emAtendimento
-      );
+        setAtendimentoAtual(meuAtendimento);
 
-      setFinalizados(finalizadosRecebidos);
-      setUltimaAtualizacao(new Date());
-    } catch (error) {
-      console.error(
-        "Erro ao carregar painel de atendimentos:",
-        error
-      );
+        setFinalizados(finalizadosRecebidos);
+        setUltimaAtualizacao(new Date());
+      } catch (error) {
+        console.error(
+          "Erro ao carregar painel de atendimentos:",
+          error
+        );
 
-      setErro(
-        obterMensagemErro(error)
-      );
-    } finally {
-      setCarregando(false);
-    }
-  },
-  [navigate, setorId]
-);
-
+        setErro(
+          obterMensagemErro(error)
+        );
+      } finally {
+        if (mostrarCarregando) {
+          setCarregando(false);
+        }
+      }
+    },
+    [navigate, setorId, acessoServidor?.servidor_masp]
+  );
 
   useEffect(() => {
-  carregarPainel();
-}, [carregarPainel]);
+    carregarPainel();
+  }, [carregarPainel]);
+
+  // Atualização automática silenciosa: mantém a fila em dia sem exigir
+  // que o servidor fique clicando em "atualizar" o tempo todo.
+  useEffect(() => {
+    if (!setorId) return;
+
+    const intervalo = setInterval(() => {
+      carregarPainel(false);
+    }, INTERVALO_ATUALIZACAO_MS);
+
+    return () => clearInterval(intervalo);
+  }, [carregarPainel, setorId]);
 
   async function handleChamar(atendimento) {
     try {
       setCarregando(true);
       setErro("");
 
-      await convocarAtendimento(
-  atendimento.id,
-  {
-    servidor_nome: acessoServidor.servidor_nome,
-    servidor_masp: acessoServidor.servidor_masp,
-    setor_id: acessoServidor.setor_id,
-  }
-);
+      await convocarAtendimento(atendimento.id, {});
 
       setObservacoes("");
 
@@ -161,32 +177,31 @@ import {
     }
   }
 
+  async function handleIniciar(atendimento) {
+    try {
+      setCarregando(true);
+      setErro("");
 
-async function handleIniciar(atendimento) {
-  try {
-    setCarregando(true);
-    setErro("");
+      await iniciarAtendimento(
+        atendimento.id,
+        {}
+      );
 
-    await iniciarAtendimento(
-      atendimento.id,
-      {}
-    );
+      await carregarPainel();
+    } catch (error) {
+      console.error(
+        "Erro ao iniciar atendimento:",
+        error
+      );
 
-    await carregarPainel();
-  } catch (error) {
-    console.error(
-      "Erro ao iniciar atendimento:",
-      error
-    );
-
-    setErro(
-      obterMensagemErro(error)
-      || "Não foi possível iniciar o atendimento."
-    );
-  } finally {
-    setCarregando(false);
+      setErro(
+        obterMensagemErro(error)
+        || "Não foi possível iniciar o atendimento."
+      );
+    } finally {
+      setCarregando(false);
+    }
   }
-}
 
   async function handleFinalizar(
     atendimento,
@@ -219,21 +234,10 @@ async function handleIniciar(atendimento) {
       setCarregando(false);
     }
   }
-  
-
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        bgcolor: "grey.100",
-        py: {
-          xs: 2,
-          md: 4,
-        },
-      }}
-    >
-      <Container maxWidth="xl">
+    <Box sx={{ width: "100%" }}>
+      <Container maxWidth="xl" disableGutters>
         <Stack spacing={3}>
           <Stack
             direction={{
@@ -260,7 +264,9 @@ async function handleIniciar(atendimento) {
                 color="text.secondary"
                 mt={0.5}
               >
-                Gerencie a fila e os atendimentos em andamento.
+                {acessoServidor?.servidor_nome
+                  ? `Logado como ${acessoServidor.servidor_nome} — ${acessoServidor.setor_nome}`
+                  : "Gerencie a fila e os atendimentos em andamento."}
               </Typography>
             </Box>
 

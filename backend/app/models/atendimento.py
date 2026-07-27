@@ -29,6 +29,12 @@ class Atendimento(BaseModel):
         index=True,
     )
 
+    numero_senha: Mapped[str | None] = mapped_column(
+        String(20),
+        nullable=True,
+        index=True,
+    )
+
     servidor_nome: Mapped[str | None] = mapped_column(
         String(150),
         nullable=True,
@@ -85,11 +91,6 @@ class Atendimento(BaseModel):
 
     data_finalizacao: Mapped[datetime | None] = mapped_column(
         DateTime,
-        nullable=True,
-    )
-
-    servidor_responsavel: Mapped[str | None] = mapped_column(
-        String(150),
         nullable=True,
     )
 

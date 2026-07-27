@@ -24,6 +24,8 @@ import {
   Typography,
 } from "@mui/material";
 
+import { resumoDocumentos } from "../../utils/formatacao";
+
 
 function formatarHorario(data) {
   if (!data) {
@@ -152,6 +154,15 @@ export default function CardFila({
 
                 <Typography
                   variant="body2"
+                  color="text.secondary"
+                  noWrap
+                >
+                  {resumoDocumentos(cidadao)
+                    || "Sem documento cadastrado"}
+                </Typography>
+
+                <Typography
+                  variant="caption"
                   color="text.secondary"
                 >
                   Chegada às{" "}

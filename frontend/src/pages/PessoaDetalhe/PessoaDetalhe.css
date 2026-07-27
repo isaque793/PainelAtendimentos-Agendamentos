@@ -1,0 +1,35 @@
+/* O padding externo vem de .layout > .conteudo (index.css). */
+.pessoa-detalhe .voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #1d4ed8;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.pessoa-detalhe .voltar:hover {
+  text-decoration: underline;
+}
+
+.pessoa-dados-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.atendimento-item {
+  border: 1px solid var(--cor-borda);
+  border-radius: 12px;
+  padding: 18px 20px;
+  background-color: #ffffff;
+}
+
+.atendimento-campos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}

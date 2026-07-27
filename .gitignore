@@ -1,9 +1,8 @@
-cat > .gitignore << 'EOF'
-# Variáveis de ambiente
+# Variáveis de ambiente (nunca suba a sua .env real — só o .env.example)
 .env
 **/.env
 
-# Cache do Python
+# Cache e bytecode do Python
 __pycache__/
 **/__pycache__/
 *.pyc
@@ -13,18 +12,34 @@ __pycache__/
 # Ambientes virtuais
 .venv/
 venv/
+**/venv/
 
-# IDEs
-.vscode/
-.idea/
-
-# Logs e testes
-*.log
+# Testes
 .pytest_cache/
+**/.pytest_cache/
 .coverage
 htmlcov/
-EOF
 
+# Banco de dados local (SQLite)
 *.db
 *.sqlite
 *.sqlite3
+
+# Logs
+*.log
+
+# Node / frontend
+node_modules/
+**/node_modules/
+dist/
+frontend/dist/
+
+# Editor — mantém as configurações compartilhadas do projeto
+# (.vscode/settings.json, tasks.json), mas ignora preferências
+# pessoais que cada um configura na própria máquina.
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json

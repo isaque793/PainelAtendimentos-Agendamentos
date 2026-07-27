@@ -3,14 +3,41 @@
 // apontando para o endereço público do backend.
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
+function obterTokenAtual() {
+  try {
+    const acesso = JSON.parse(sessionStorage.getItem("acessoServidor"));
+    return acesso?.access_token || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function apiRequest(endpoint, options = {}) {
+  const token = obterTokenAtual();
+
+  const headers = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
+
   const response = await fetch(`${API_URL}${endpoint}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
     ...options,
+    headers,
   });
+
+  if (response.status === 401) {
+    // Sessão ausente ou expirada: limpa o login guardado e manda a
+    // pessoa fazer login de novo, em vez de deixar a tela travada
+    // mostrando um erro genérico.
+    sessionStorage.removeItem("acessoServidor");
+
+    if (!window.location.pathname.startsWith("/direcao/acesso")) {
+      window.location.href = "/direcao/acesso";
+    }
+
+    throw new Error("Sessão expirada. Faça login novamente.");
+  }
 
   if (!response.ok) {
     let mensagem = "Ocorreu um erro na comunicação com o servidor.";
@@ -31,3 +58,5 @@ export async function apiRequest(endpoint, options = {}) {
 
   return response.json();
 }
+
+export { API_URL };

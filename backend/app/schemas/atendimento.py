@@ -1,11 +1,14 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
+
+from app.utils.formatacao import formatar_cpf, formatar_masp
 
 from app.models.atendimento import (
     PrioridadeAtendimento,
     StatusAtendimento,
 )
+
 
 class CidadaoResumo(BaseModel):
     id: int
@@ -15,20 +18,26 @@ class CidadaoResumo(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class AtendimentoCreate(BaseModel):
-    cidadao_id: int
-    setor_id: int
+    @computed_field
+    @property
+    def cpf_formatado(self) -> str | None:
+        """CPF já com máscara (000.000.000-00) para o front só exibir."""
+        return formatar_cpf(self.cpf)
 
-    assunto: str = Field(
-        min_length=3,
-        max_length=150,
-    )
+    @computed_field
+    @property
+    def masp_formatado(self) -> str | None:
+        """MASP no formato oficial (1234567-8) para exibição."""
+        return formatar_masp(self.masp)
 
-    descricao: str | None = None
 
-    prioridade: PrioridadeAtendimento = (
-        PrioridadeAtendimento.NORMAL
-    )
+class SetorResumo(BaseModel):
+    id: int
+    nome: str
+    sigla: str
+    numero_sala: str
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AtendimentoCreate(BaseModel):
@@ -50,12 +59,17 @@ class AtendimentoCreate(BaseModel):
 class AtendimentoResponse(BaseModel):
     id: int
     cidadao_id: int
+    cidadao: CidadaoResumo
+
     setor_id: int
+    setor: SetorResumo
+
+    numero_senha: str | None
 
     assunto: str
     descricao: str | None
-    prioridade: str
-    status: str
+    prioridade: PrioridadeAtendimento
+    status: StatusAtendimento
 
     servidor_nome: str | None
     servidor_masp: str | None
@@ -75,22 +89,23 @@ class AtendimentoResponse(BaseModel):
 
 
 class AtendimentoConvocar(BaseModel):
-    servidor_nome: str = Field(
-        min_length=3,
-        max_length=150,
-    )
-
-    servidor_masp: str = Field(
-        min_length=3,
-        max_length=30,
-    )
-
-    setor_id: int = Field(
-        gt=0,
-    )
+    """
+    Vazio de propósito: quem está convocando (servidor_nome,
+    servidor_masp) e de qual setor (setor_id) vêm do token de acesso
+    autenticado (ver app/core/auth.py), nunca do corpo da requisição —
+    do contrário, qualquer cliente poderia se passar por outro servidor
+    só preenchendo esses campos manualmente.
+    """
+    pass
 
 
 class AtendimentoIniciar(BaseModel):
+    """
+    Nenhum dado adicional é necessário aqui: o servidor responsável já
+    é registrado no passo de convocação (AtendimentoConvocar). Este
+    schema existe só para manter o endpoint explícito e permitir a
+    evolução futura sem quebrar o contrato da rota.
+    """
     pass
 
 
@@ -117,7 +132,9 @@ class ChamadaPublica(BaseModel):
     """
     id: int
     nome: str
-    guiche: str | None = None
+    numero_senha: str | None = None
+    numero_sala: str | None = None
+    setor: str | None = None
     status: StatusAtendimento
     chamado_em: datetime | None = None
 

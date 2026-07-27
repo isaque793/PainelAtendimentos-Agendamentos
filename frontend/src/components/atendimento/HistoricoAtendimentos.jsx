@@ -1,15 +1,24 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import {
   Box,
   Card,
   CardContent,
-  Chip,
   Divider,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
-import HistoryIcon from "@mui/icons-material/History";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+
+import {
+  apenasDigitos,
+  mascararDocumentoOuNome,
+  resumoDocumentos,
+} from "../../utils/formatacao";
 
 
 function formatarHorario(data) {
@@ -27,6 +36,35 @@ function formatarHorario(data) {
 export default function HistoricoAtendimentos({
   atendimentos = [],
 }) {
+  const [termo, setTermo] = useState("");
+  const navigate = useNavigate();
+
+  // A busca compara sempre só os dígitos do documento: assim funciona
+  // tanto se o servidor digitar "144.146.336-48" quanto "14414633648".
+  const termoNormalizado = termo.trim().toLowerCase();
+  const digitosBuscados = apenasDigitos(termo);
+
+  const atendimentosFiltrados = termoNormalizado
+    ? atendimentos.filter((atendimento) => {
+        const nome = (atendimento?.cidadao?.nome || "").toLowerCase();
+
+        if (nome.includes(termoNormalizado)) {
+          return true;
+        }
+
+        if (!digitosBuscados) {
+          return false;
+        }
+
+        const cpf = apenasDigitos(atendimento?.cidadao?.cpf);
+        const masp = apenasDigitos(atendimento?.cidadao?.masp);
+
+        return (
+          cpf.includes(digitosBuscados) || masp.includes(digitosBuscados)
+        );
+      })
+    : atendimentos;
+
   return (
     <Card
       variant="outlined"
@@ -38,10 +76,23 @@ export default function HistoricoAtendimentos({
     >
       <CardContent>
         <Stack spacing={2}>
-          
+
+          <TextField
+            size="small"
+            fullWidth
+            value={termo}
+            onChange={(evento) =>
+              setTermo(mascararDocumentoOuNome(evento.target.value))
+            }
+            placeholder="Buscar por nome, CPF ou MASP"
+            InputProps={{
+              startAdornment: <SearchOutlinedIcon fontSize="small" color="action" style={{ marginRight: 6 }} />,
+            }}
+          />
+
           <Divider />
 
-          {atendimentos.length === 0 ? (
+          {atendimentosFiltrados.length === 0 ? (
             <Box
               sx={{
                 minHeight: 240,
@@ -54,18 +105,24 @@ export default function HistoricoAtendimentos({
                 color="text.secondary"
                 textAlign="center"
               >
-                Nenhum atendimento foi finalizado hoje.
+                {atendimentos.length === 0
+                  ? "Nenhum atendimento foi finalizado hoje."
+                  : "Nenhum resultado para essa busca."}
               </Typography>
             </Box>
           ) : (
             <Stack spacing={1}>
-              {atendimentos.map((atendimento) => {
+              {atendimentosFiltrados.map((atendimento) => {
                 const nome =
                   atendimento?.cidadao?.nome ||
                   `Cidadão #${atendimento?.cidadao_id}`;
 
                 return (
-                  <Box key={atendimento.id}>
+                  <Box
+                    key={atendimento.id}
+                    onClick={() => navigate(`/direcao/pessoa/${atendimento.cidadao_id}`)}
+                    sx={{ cursor: "pointer" }}
+                  >
                     <Stack
                       direction="row"
                       spacing={1.25}
@@ -92,6 +149,15 @@ export default function HistoricoAtendimentos({
                         >
                           {atendimento?.assunto ||
                             "Assunto não informado"}
+                        </Typography>
+
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          display="block"
+                          noWrap
+                        >
+                          {resumoDocumentos(atendimento?.cidadao)}
                         </Typography>
                       </Box>
 

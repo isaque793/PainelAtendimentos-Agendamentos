@@ -1,0 +1,111 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Backend: Instalar dependências (1ª vez)",
+      "type": "shell",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "windows": {
+        "command": "python -m venv venv; .\\venv\\Scripts\\python.exe -m pip install --upgrade pip; .\\venv\\Scripts\\pip.exe install -r requirements.txt"
+      },
+      "linux": {
+        "command": "python3 -m venv venv && ./venv/bin/pip install --upgrade pip && ./venv/bin/pip install -r requirements.txt"
+      },
+      "osx": {
+        "command": "python3 -m venv venv && ./venv/bin/pip install --upgrade pip && ./venv/bin/pip install -r requirements.txt"
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Criar .env (se não existir)",
+      "type": "shell",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "windows": {
+        "command": "if (!(Test-Path .env)) { Copy-Item .env.example .env; Write-Host 'Criado backend/.env — edite JWT_SECRET_KEY antes de ir para produção.' } else { Write-Host 'backend/.env já existe, mantido como está.' }"
+      },
+      "linux": {
+        "command": "test -f .env && echo 'backend/.env já existe, mantido como está.' || (cp .env.example .env && echo 'Criado backend/.env — edite JWT_SECRET_KEY antes de ir para produção.')"
+      },
+      "osx": {
+        "command": "test -f .env && echo 'backend/.env já existe, mantido como está.' || (cp .env.example .env && echo 'Criado backend/.env — edite JWT_SECRET_KEY antes de ir para produção.')"
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Rodar servidor (uvicorn)",
+      "type": "shell",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "windows": { "command": ".\\venv\\Scripts\\uvicorn.exe app.main:app --reload --port 8000" },
+      "linux": { "command": "./venv/bin/uvicorn app.main:app --reload --port 8000" },
+      "osx": { "command": "./venv/bin/uvicorn app.main:app --reload --port 8000" },
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated", "group": "servidores" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Rodar testes (pytest)",
+      "type": "shell",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "windows": { "command": ".\\venv\\Scripts\\pip.exe install -r requirements-dev.txt; .\\venv\\Scripts\\pytest.exe" },
+      "linux": { "command": "./venv/bin/pip install -r requirements-dev.txt && ./venv/bin/pytest" },
+      "osx": { "command": "./venv/bin/pip install -r requirements-dev.txt && ./venv/bin/pytest" },
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Instalar dependências (1ª vez)",
+      "type": "shell",
+      "command": "npm install",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Criar .env (se não existir)",
+      "type": "shell",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "windows": {
+        "command": "if (!(Test-Path .env)) { Copy-Item .env.example .env; Write-Host 'Criado frontend/.env' } else { Write-Host 'frontend/.env já existe, mantido como está.' }"
+      },
+      "linux": {
+        "command": "test -f .env && echo 'frontend/.env já existe, mantido como está.' || (cp .env.example .env && echo 'Criado frontend/.env')"
+      },
+      "osx": {
+        "command": "test -f .env && echo 'frontend/.env já existe, mantido como está.' || (cp .env.example .env && echo 'Criado frontend/.env')"
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Rodar servidor (Vite)",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated", "group": "servidores" },
+      "problemMatcher": []
+    },
+    {
+      "label": "🚀 Configurar tudo (primeira vez)",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Backend: Instalar dependências (1ª vez)",
+        "Backend: Criar .env (se não existir)",
+        "Frontend: Instalar dependências (1ª vez)",
+        "Frontend: Criar .env (se não existir)"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "▶️ Rodar tudo (backend + frontend)",
+      "dependsOrder": "parallel",
+      "dependsOn": [
+        "Backend: Rodar servidor (uvicorn)",
+        "Frontend: Rodar servidor (Vite)"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}

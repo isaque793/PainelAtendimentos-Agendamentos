@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.core.auth import ServidorAutenticado, obter_servidor_autenticado
 from app.database.connection import get_db
 from app.repositories.setor_repository import (
     SetorRepository,
@@ -30,6 +31,23 @@ def obter_service(
     return SetorService(repository)
 
 
+def exigir_direcao(
+    servidor: ServidorAutenticado = Depends(obter_servidor_autenticado),
+) -> ServidorAutenticado:
+    """
+    Só a Direção cadastra ou edita setores — é aqui que o perfil
+    DIRECAO é concedido a um setor, então deixar essa rota aberta
+    deixaria qualquer um se autopromover.
+    """
+    if not servidor.eh_direcao:
+        raise HTTPException(
+            status_code=403,
+            detail="Apenas a Direção pode gerenciar setores.",
+        )
+
+    return servidor
+
+
 @router.post(
     "/",
     response_model=SetorResponse,
@@ -37,6 +55,7 @@ def obter_service(
 )
 def criar_setor(
     dados: SetorCreate,
+    _servidor: ServidorAutenticado = Depends(exigir_direcao),
     service: SetorService = Depends(
         obter_service
     ),
@@ -126,6 +145,7 @@ def validar_acesso_setor(
 def atualizar_setor(
     setor_id: int,
     dados: SetorUpdate,
+    _servidor: ServidorAutenticado = Depends(exigir_direcao),
     service: SetorService = Depends(
         obter_service
     ),

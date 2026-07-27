@@ -1,7 +1,8 @@
-from sqlalchemy import select
+from datetime import datetime
+
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from app.models.atendimento import Atendimento, StatusAtendimento
-
 
 
 class AtendimentoRepository:
@@ -9,10 +10,24 @@ class AtendimentoRepository:
     def __init__(self, db: Session):
         self.db = db
 
+    def contar_hoje_por_setor(self, setor_id: int) -> int:
+        """Quantos atendimentos já foram criados hoje neste setor — usado
+        para numerar a senha/ficha do próximo (ex.: 'A-004')."""
+        inicio_do_dia = datetime.now().replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+
+        comando = select(func.count(Atendimento.id)).where(
+            Atendimento.setor_id == setor_id,
+            Atendimento.data_solicitacao >= inicio_do_dia,
+        )
+
+        return self.db.scalar(comando) or 0
+
     def criar(
-    self,
-    atendimento: Atendimento,
-) -> Atendimento:
+        self,
+        atendimento: Atendimento,
+    ) -> Atendimento:
         self.db.add(atendimento)
         self.db.commit()
         self.db.refresh(atendimento)
@@ -22,11 +37,29 @@ class AtendimentoRepository:
     def buscar_por_id(self, atendimento_id: int) -> Atendimento | None:
         return self.db.get(Atendimento, atendimento_id)
 
-    def listar_todos(self) -> list[Atendimento]:
+    def listar_todos(
+        self,
+        cidadao_id: int | None = None,
+        setor_id: int | None = None,
+        limite: int = 100,
+        offset: int = 0,
+    ) -> list[Atendimento]:
         comando = (
             select(Atendimento)
             .order_by(Atendimento.data_solicitacao.desc())
         )
+
+        if cidadao_id is not None:
+            comando = comando.where(
+                Atendimento.cidadao_id == cidadao_id
+            )
+
+        if setor_id is not None:
+            comando = comando.where(
+                Atendimento.setor_id == setor_id
+            )
+
+        comando = comando.offset(offset).limit(limite)
 
         return list(
             self.db.scalars(comando).all()
@@ -34,14 +67,11 @@ class AtendimentoRepository:
 
     def listar_fila(
         self,
-        setor_id: int,
+        setor_id: int | None = None,
     ) -> list[Atendimento]:
-
-    
         comando = (
             select(Atendimento)
             .where(
-                Atendimento.setor_id == setor_id,
                 Atendimento.status.in_(
                     [
                         StatusAtendimento.AGUARDANDO.value,
@@ -55,38 +85,43 @@ class AtendimentoRepository:
             )
         )
 
+        if setor_id is not None:
+            comando = comando.where(Atendimento.setor_id == setor_id)
+
         return list(
             self.db.scalars(comando).all()
         )
 
     def listar_aguardando(
         self,
-        setor_id: int,
+        setor_id: int | None = None,
     ) -> list[Atendimento]:
         comando = (
             select(Atendimento)
             .where(
                 Atendimento.status
                 == StatusAtendimento.AGUARDANDO.value,
-                Atendimento.setor_id == setor_id,
             )
             .order_by(
-                Atendimento.data_solicitacao
+                Atendimento.prioridade.desc(),
+                Atendimento.data_solicitacao.asc(),
             )
         )
+
+        if setor_id is not None:
+            comando = comando.where(Atendimento.setor_id == setor_id)
 
         return list(
             self.db.scalars(comando).all()
         )
 
     def listar_em_atendimento(
-    self,
-    setor_id: int,
-) -> list[Atendimento]:
+        self,
+        setor_id: int | None = None,
+    ) -> list[Atendimento]:
         comando = (
             select(Atendimento)
             .where(
-                Atendimento.setor_id == setor_id,
                 Atendimento.status.in_(
                     [
                         StatusAtendimento.CONVOCADO.value,
@@ -99,18 +134,20 @@ class AtendimentoRepository:
             )
         )
 
+        if setor_id is not None:
+            comando = comando.where(Atendimento.setor_id == setor_id)
+
         return list(
             self.db.scalars(comando).all()
         )
 
     def listar_finalizados(
-    self,
-    setor_id: int,
+        self,
+        setor_id: int | None = None,
     ) -> list[Atendimento]:
         comando = (
             select(Atendimento)
             .where(
-                Atendimento.setor_id == setor_id,
                 Atendimento.status
                 == StatusAtendimento.FINALIZADO.value,
             )
@@ -118,6 +155,41 @@ class AtendimentoRepository:
                 Atendimento.data_finalizacao.desc()
             )
         )
+
+        if setor_id is not None:
+            comando = comando.where(Atendimento.setor_id == setor_id)
+
+        return list(
+            self.db.scalars(comando).all()
+        )
+
+    def listar_por_periodo(
+        self,
+        inicio: datetime,
+        fim: datetime,
+        setor_id: int | None = None,
+    ) -> list[Atendimento]:
+        """
+        Atendimentos solicitados dentro do período — base do relatório
+        em Excel (mensal ou semanal). Inclui os cancelados e os que
+        ficaram em aberto, para o relatório refletir o período inteiro
+        e não só o que deu certo.
+
+        ``setor_id=None`` agrega TODOS os setores — é o que dá à
+        Direção o relatório consolidado; um operador comum nunca chega
+        aqui com setor_id=None (o router garante isso antes).
+        """
+        comando = (
+            select(Atendimento)
+            .where(
+                Atendimento.data_solicitacao >= inicio,
+                Atendimento.data_solicitacao <= fim,
+            )
+            .order_by(Atendimento.data_solicitacao.asc())
+        )
+
+        if setor_id is not None:
+            comando = comando.where(Atendimento.setor_id == setor_id)
 
         return list(
             self.db.scalars(comando).all()

@@ -1,16 +1,51 @@
+:root {
+  --cor-superficie: #f1f5f9;
+  --cor-borda: #e2e8f0;
+  --altura-header: 68px;
+  --largura-sidebar: 250px;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  background-color: #f5f6fa;
+html,
+body,
+#root {
+  height: 100%;
 }
 
-.layout{
+body {
+  font-family: "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  background-color: var(--cor-superficie);
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
 
-    display:flex;
+/* Layout interno: barra lateral fixa + área de conteúdo rolável. */
+.layout {
+  display: flex;
+  align-items: stretch;
+  min-height: calc(100vh - var(--altura-header));
+}
 
+.layout > main,
+.layout > .conteudo {
+  flex: 1;
+  min-width: 0;
+  padding: 28px 32px 48px;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .layout > main,
+  .layout > .conteudo {
+    padding: 20px 16px 32px;
+  }
 }

@@ -2,78 +2,92 @@ import {
     BrowserRouter,
     Navigate,
     Route,
-    Routes
+    Routes,
 } from "react-router-dom";
 
 import AtendimentoPublico
     from "./pages/AtendimentoPublico/AtendimentoPublico";
 
-import Dashboard
-    from "./pages/Dashboard/Dashboard";
+import Dashboard from "./pages/Dashboard/Dashboard";
 
-import InternalLayout
-    from "./layouts/InternalLayout";
+import InternalLayout from "./layouts/InternalLayout";
 
-import Cidadaos 
-    from "./pages/Cidadaos/Cidadaos";
+import PessoaDetalhe from "./pages/PessoaDetalhe/PessoaDetalhe";
 
 import AtendimentoServidor
     from "./pages/AtendimentoServidor/AtendimentoServidor";
 
-import PainelChamada
-    from "./pages/PainelChamada/PainelChamada";
+import Relatorios from "./pages/Relatorios/Relatorios";
 
- import AcessoServidor
-    from "./pages/AcessoServidor/AcessoServidor";
+import PainelChamada from "./pages/PainelChamada/PainelChamada";
+
+import AcessoServidor from "./pages/AcessoServidor/AcessoServidor";
+
+import RotaProtegida from "./components/RotaProtegida";
 
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route
-                    path="/"
-                    element={<AtendimentoPublico />}
-                />
+                {/* Totem público — sem login. */}
+                <Route path="/" element={<AtendimentoPublico />} />
 
-                <Route
-                    path="/direcao"
-                    element={
-                        <InternalLayout>
-                            <Dashboard />
-                        </InternalLayout>
-                    }
-                />
-                
-                <Route
-                    path="/direcao/cidadaos"
-                    element={
-                       <InternalLayout>
-                          <Cidadaos />
-                       </InternalLayout>
-                    }
-                />
+                {/* TV da sala de espera — sem login. */}
+                <Route path="/chamada" element={<PainelChamada />} />
 
-                <Route
-                   path="/direcao/atendimentos"
-                   element={<AtendimentoServidor />}
-                />
-
-                <Route
-                   path="/chamada"
-                   element={<PainelChamada />}
-                />
-
+                {/* Login do servidor — pré-requisito para tudo abaixo. */}
                 <Route
                     path="/direcao/acesso"
                     element={<AcessoServidor />}
                 />
 
+                {/* Área interna — cada rota exige sessão válida. */}
+                <Route
+                    path="/direcao"
+                    element={
+                        <RotaProtegida>
+                            <InternalLayout>
+                                <Dashboard />
+                            </InternalLayout>
+                        </RotaProtegida>
+                    }
+                />
 
                 <Route
-                    path="*"
-                    element={<Navigate to="/" replace />}
+                    path="/direcao/pessoa/:cidadaoId"
+                    element={
+                        <RotaProtegida>
+                            <InternalLayout>
+                                <PessoaDetalhe />
+                            </InternalLayout>
+                        </RotaProtegida>
+                    }
                 />
+
+                <Route
+                    path="/direcao/atendimentos"
+                    element={
+                        <RotaProtegida>
+                            <InternalLayout>
+                                <AtendimentoServidor />
+                            </InternalLayout>
+                        </RotaProtegida>
+                    }
+                />
+
+                <Route
+                    path="/direcao/relatorios"
+                    element={
+                        <RotaProtegida>
+                            <InternalLayout>
+                                <Relatorios />
+                            </InternalLayout>
+                        </RotaProtegida>
+                    }
+                />
+
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </BrowserRouter>
     );

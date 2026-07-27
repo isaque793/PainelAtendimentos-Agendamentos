@@ -1,57 +1,97 @@
-.sidebar{
-    width:240px;
-    height:calc(100vh - 70px);
-    background:#1E293B;
-    color:white;
-    padding:20px;
-    box-sizing: border-box;
+.sidebar {
+    width: var(--largura-sidebar);
+    flex-shrink: 0;
+
+    background: #0f172a;
+    color: #e2e8f0;
+
+    padding: 22px 16px;
+
+    display: flex;
+    flex-direction: column;
+
+    position: sticky;
+    top: var(--altura-header);
+    height: calc(100vh - var(--altura-header));
 }
 
-.sidebar h2{
-    margin-bottom:25px;
+.sidebar-titulo {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #64748b;
+
+    padding: 0 12px;
+    margin-bottom: 14px;
 }
 
-.sidebar ul{
-    list-style:none;
-    padding: 0;
-    margin: 0;
+.sidebar ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-.sidebar li{
-    border-radius:8px;
-    transition:.2s;
-    margin-bottom: 6px;
-}
+.sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 
-.sidebar li a{
-    display: block;
-    padding:12px;
-    color: white;
+    padding: 11px 12px;
+    border-radius: 10px;
+
+    color: #cbd5e1;
     text-decoration: none;
-    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.sidebar li a:hover{
-    background:#334155;
+.sidebar a:hover {
+    background: rgba(148, 163, 184, 0.14);
+    color: #ffffff;
 }
 
-.sidebar li a.ativo{
-    background: #2563eb;
+.sidebar a.ativo {
+    background: #1d4ed8;
+    color: #ffffff;
     font-weight: 600;
 }
 
-.sidebar li.em-breve{
-    padding: 12px;
-    color: #94a3b8;
-    cursor: default;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.sidebar .icone-externo {
+    margin-left: auto;
+    font-size: 14px;
+    opacity: 0.55;
 }
 
-.sidebar li.em-breve span{
-    font-size: 11px;
-    background: #334155;
-    padding: 2px 8px;
-    border-radius: 999px;
+.sidebar-servidor {
+    margin-top: auto;
+    padding: 14px 12px 4px;
+
+    border-top: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+@media (max-width: 900px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        padding: 12px;
+    }
+
+    .sidebar-titulo,
+    .sidebar-servidor {
+        display: none;
+    }
+
+    .sidebar ul {
+        flex-direction: row;
+        overflow-x: auto;
+    }
+
+    .sidebar a {
+        white-space: nowrap;
+    }
 }
