@@ -93,135 +93,358 @@ export default function AtendimentoAtual({
   const estaEmAtendimento =
     atendimento?.status === "EM_ATENDIMENTO";
 
-  return (
-    <Card
-      variant="outlined"
+   return (
+  <Card
+    variant="outlined"
+    sx={{
+      position: "relative",
+      overflow: "hidden",
+      height: "100%",
+      minHeight: 360,
+      borderRadius: 3,
+      borderColor: "divider",
+      bgcolor: "background.paper",
+      boxShadow: "0 6px 20px rgba(31, 41, 55, 0.09)",
+
+      "&::before": {
+        content: '""',
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 5,
+        bgcolor: estaEmAtendimento
+          ? "success.main"
+          : "warning.main",
+      },
+    }}
+  >
+    <CardContent
       sx={{
-        height: "100%",
-        minHeight: 360,
-        borderRadius: 3,
+        p: {
+          xs: 2,
+          md: 3,
+        },
+        "&:last-child": {
+          pb: {
+            xs: 2,
+            md: 3,
+          },
+        },
       }}
     >
-      <CardContent>
-        <Stack spacing={2.5}>
+      <Stack spacing={3}>
+        <Stack
+          direction={{
+            xs: "column",
+            sm: "row",
+          }}
+          justifyContent="space-between"
+          alignItems={{
+            xs: "flex-start",
+            sm: "center",
+          }}
+          gap={2}
+        >
           <Stack
-            direction={{
-              xs: "column",
-              sm: "row",
-            }}
-            justifyContent="space-between"
-            alignItems={{
-              xs: "flex-start",
-              sm: "center",
-            }}
-            gap={1}
+            direction="row"
+            spacing={1.5}
+            alignItems="center"
+            sx={{ minWidth: 0 }}
           >
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <Box
+            <Box
+              sx={{
+                width: 56,
+                height: 56,
+                borderRadius: 2.5,
+                display: "grid",
+                placeItems: "center",
+                bgcolor: estaEmAtendimento
+                  ? "success.light"
+                  : "warning.light",
+                color: estaEmAtendimento
+                  ? "success.main"
+                  : "warning.main",
+                flexShrink: 0,
+              }}
+            >
+              <PersonOutlinedIcon
                 sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: "50%",
-                  display: "grid",
-                  placeItems: "center",
-                  bgcolor: "primary.50",
+                  fontSize: 30,
                 }}
+              />
+            </Box>
+
+            <Box sx={{ minWidth: 0 }}>
+              <Typography
+                variant="h5"
+                fontWeight={900}
+                color="text.primary"
+                noWrap
               >
-                <PersonOutlinedIcon color="primary" />
-              </Box>
+                {nomeCidadao}
+              </Typography>
 
-              <Box>
-                <Typography variant="h6" fontWeight={800}>
-                  {nomeCidadao}
-                </Typography>
-
-                <Typography variant="body2" color="text.secondary">
-                  {atendimento?.assunto || "Assunto não informado"}
-                </Typography>
-              </Box>
-            </Stack>
-
-            <Chip
-              label={
-                estaEmAtendimento
-                  ? "Em atendimento"
-                  : "Convocado"
-              }
-              color={estaEmAtendimento ? "primary" : "warning"}
-            />
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{ mt: 0.35 }}
+              >
+                {atendimento?.assunto ||
+                  "Assunto não informado"}
+              </Typography>
+            </Box>
           </Stack>
 
-          <Divider />
+          <Chip
+            label={
+              estaEmAtendimento
+                ? "Em atendimento"
+                : "Convocado"
+            }
+            color={
+              estaEmAtendimento
+                ? "success"
+                : "warning"
+            }
+            sx={{
+              fontWeight: 800,
+              minHeight: 32,
+            }}
+          />
+        </Stack>
 
-          <Box>
+        <Divider />
+
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, minmax(0, 1fr))",
+            },
+            gap: 2,
+          }}
+        >
+          <Box
+            sx={{
+              p: 1.75,
+              borderRadius: 2.5,
+              bgcolor: "action.hover",
+            }}
+          >
             <Typography
               variant="caption"
               color="text.secondary"
+              fontWeight={700}
             >
-              Descrição da solicitação
+              CPF
             </Typography>
 
-            <Typography variant="body1" mt={0.5}>
-              {atendimento?.descricao ||
-                "Nenhuma descrição informada."}
+            <Typography
+              variant="body2"
+              fontWeight={700}
+              color="text.primary"
+              sx={{ mt: 0.4 }}
+            >
+              {atendimento?.cidadao?.cpf ||
+                "Não informado"}
             </Typography>
           </Box>
 
-          <TextField
-            label="Observações do atendimento"
-            placeholder="Registre aqui o que foi realizado..."
-            multiline
-            minRows={4}
-            fullWidth
-            value={observacoes}
-            onChange={(evento) =>
-              aoAlterarObservacoes(evento.target.value)
-            }
-            disabled={!estaEmAtendimento || carregando}
-          />
-
-          {estaConvocado && (
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<PlayArrowIcon />}
-              onClick={() => aoIniciar(atendimento)}
-              disabled={carregando}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 700,
-              }}
+          <Box
+            sx={{
+              p: 1.75,
+              borderRadius: 2.5,
+              bgcolor: "action.hover",
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              fontWeight={700}
             >
-              {carregando
-                ? "Iniciando..."
-                : "Iniciar atendimento"}
-            </Button>
-          )}
+              MASP
+            </Typography>
 
-          {estaEmAtendimento && (
-            <Button
-              variant="contained"
-              color="success"
-              size="large"
-              startIcon={<CheckCircleOutlinedIcon/>}
-              onClick={() =>
-                aoFinalizar(atendimento, observacoes)
+            <Typography
+              variant="body2"
+              fontWeight={700}
+              color="text.primary"
+              sx={{ mt: 0.4 }}
+            >
+              {atendimento?.cidadao?.masp ||
+                "Não informado"}
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{
+              p: 1.75,
+              borderRadius: 2.5,
+              bgcolor: "action.hover",
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              fontWeight={700}
+            >
+              Telefone
+            </Typography>
+
+            <Typography
+              variant="body2"
+              fontWeight={700}
+              color="text.primary"
+              sx={{ mt: 0.4 }}
+            >
+              {atendimento?.cidadao?.telefone ||
+                "Não informado"}
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{
+              p: 1.75,
+              borderRadius: 2.5,
+              bgcolor: "action.hover",
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              fontWeight={700}
+            >
+              Prioridade
+            </Typography>
+
+            <Typography
+              variant="body2"
+              fontWeight={700}
+              color={
+                atendimento?.prioridade === "PRIORITARIO"
+                  ? "warning.dark"
+                  : "text.primary"
               }
-              disabled={carregando}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 700,
-              }}
+              sx={{ mt: 0.4 }}
             >
-              {carregando
-                ? "Finalizando..."
-                : "Finalizar atendimento"}
-            </Button>
-          )}
-        </Stack>
-      </CardContent>
-    </Card>
-  );
+              {atendimento?.prioridade === "PRIORITARIO"
+                ? "Prioritário"
+                : "Normal"}
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box
+          sx={{
+            p: 2,
+            borderRadius: 2.5,
+            border: 1,
+            borderColor: "divider",
+            bgcolor: "background.default",
+          }}
+        >
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            fontWeight={700}
+          >
+            Descrição da solicitação
+          </Typography>
+
+          <Typography
+            variant="body1"
+            color="text.primary"
+            sx={{
+              mt: 0.75,
+              lineHeight: 1.6,
+            }}
+          >
+            {atendimento?.descricao ||
+              "Nenhuma descrição informada."}
+          </Typography>
+        </Box>
+
+        <TextField
+          label="Observações do atendimento"
+          placeholder="Registre aqui o que foi realizado..."
+          multiline
+          minRows={5}
+          fullWidth
+          value={observacoes}
+          onChange={(evento) =>
+            aoAlterarObservacoes(evento.target.value)
+          }
+          disabled={!estaEmAtendimento || carregando}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 2.5,
+              bgcolor: !estaEmAtendimento
+                ? "action.hover"
+                : "background.paper",
+            },
+          }}
+        />
+
+        {estaConvocado && (
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<PlayArrowIcon />}
+            onClick={() => aoIniciar(atendimento)}
+            disabled={carregando}
+            fullWidth
+            sx={{
+              minHeight: 50,
+              borderRadius: 2.5,
+              textTransform: "none",
+              fontWeight: 800,
+              boxShadow: "none",
+
+              "&:hover": {
+                boxShadow:
+                  "0 6px 14px rgba(0, 92, 169, 0.22)",
+              },
+            }}
+          >
+            {carregando
+              ? "Iniciando..."
+              : "Iniciar atendimento"}
+          </Button>
+        )}
+
+        {estaEmAtendimento && (
+          <Button
+            variant="contained"
+            color="success"
+            size="large"
+            startIcon={<CheckCircleOutlinedIcon />}
+            onClick={() =>
+              aoFinalizar(atendimento, observacoes)
+            }
+            disabled={carregando}
+            fullWidth
+            sx={{
+              minHeight: 50,
+              borderRadius: 2.5,
+              textTransform: "none",
+              fontWeight: 800,
+              boxShadow: "none",
+
+              "&:hover": {
+                boxShadow:
+                  "0 6px 14px rgba(46, 125, 50, 0.22)",
+              },
+            }}
+          >
+            {carregando
+              ? "Finalizando..."
+              : "Finalizar atendimento"}
+          </Button>
+        )}
+      </Stack>
+    </CardContent>
+  </Card>
+); 
 }

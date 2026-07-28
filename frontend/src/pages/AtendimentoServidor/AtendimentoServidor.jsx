@@ -280,18 +280,46 @@ export default function AtendimentoServidor() {
       </Alert>
     )}
 
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                lg: "340px minmax(500px, 1fr) 320px",
-              },
-              gap: 4,
-              alignItems: "start",
-            }}
-          >
-            <Stack spacing={2}>
+       <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              md: "repeat(2, minmax(0, 1fr))",
+              xl: `
+                minmax(290px, 0.9fr)
+                minmax(440px, 1.35fr)
+                minmax(290px, 0.9fr)
+              `,
+            },
+            gap: {
+              xs: 2,
+              md: 2.5,
+              xl: 3,
+            },
+            alignItems: "stretch",
+          }}
+        >
+          
+              <Stack
+                  spacing={2}
+                  sx={{
+                    minWidth: 0,
+                    minHeight: 520,
+                    p: {
+                      xs: 2,
+                      md: 2.5,
+                    },
+                    bgcolor: "background.paper",
+                    border: 1,
+                    borderColor: "divider",
+                    borderTop: 4,
+                    borderTopColor: "primary.main",
+                    borderRadius: 3,
+                    boxShadow: "0 3px 12px rgba(31, 41, 55, 0.06)",
+                  }}
+                >
+
               <Stack
                 direction="row"
                 justifyContent="space-between"
@@ -302,20 +330,49 @@ export default function AtendimentoServidor() {
                   spacing={1}
                   alignItems="center"
                 >
-                  <GroupsOutlinedIcon color="action" />
-
-                  <Typography
-                    variant="h6"
-                    fontWeight={800}
+                  <Box
+                    sx={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: 2,
+                      display: "grid",
+                      placeItems: "center",
+                      bgcolor: "primary.light",
+                      color: "primary.dark",
+                      flexShrink: 0,
+                    }}
                   >
-                    Fila de espera
-                  </Typography>
+                    <GroupsOutlinedIcon fontSize="small" />
+                  </Box>
+                   
+                 <Box>
+                    <Typography
+                      variant="h6"
+                      fontWeight={800}
+                      color="text.primary"
+                    >
+                      Fila de espera
+                    </Typography>
+
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                    >
+                      Cidadãos aguardando atendimento
+                    </Typography>
+                  </Box>
+
                 </Stack>
 
                 <Chip
                   size="small"
-                  label={fila.length}
+                  label={`${fila.length} aguardando`}
                   color="primary"
+                  variant="outlined"
+                  sx={{
+                    bgcolor: "primary.light",
+                    borderColor: "transparent",
+                  }}
                 />
               </Stack>
 
@@ -355,21 +412,91 @@ export default function AtendimentoServidor() {
               )}
             </Stack>
 
-            <Stack spacing={2}>
-              <Stack
+            <Stack
+              spacing={2}
+              sx={{
+                minWidth: 0,
+                minHeight: 520,
+                p: {
+                  xs: 2,
+                  md: 2.5,
+                },
+                bgcolor: "background.paper",
+                border: 1,
+                borderColor: "divider",
+                borderTop: 4,
+                borderTopColor: "warning.main",
+                borderRadius: 3,
+                boxShadow: "0 5px 18px rgba(31, 41, 55, 0.09)",
+              }}
+            >
+              
+             <Stack
                 direction="row"
-                spacing={1}
+                justifyContent="space-between"
                 alignItems="center"
+                gap={2}
               >
-                <SupportAgentIcon color="action" />
-
-                <Typography
-                  variant="h6"
-                  fontWeight={800}
+                <Stack
+                  direction="row"
+                  spacing={1.25}
+                  alignItems="center"
                 >
-                  Atendimento atual
-                </Typography>
+                  <Box
+                    sx={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: 2,
+                      display: "grid",
+                      placeItems: "center",
+                      bgcolor: "warning.light",
+                      color: "warning.main",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <SupportAgentIcon fontSize="small" />
+                  </Box>
+
+                  <Box>
+                    <Typography
+                      variant="h6"
+                      fontWeight={800}
+                      color="text.primary"
+                    >
+                      Atendimento atual
+                    </Typography>
+
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                    >
+                      Atendimento sob responsabilidade do servidor
+                    </Typography>
+                  </Box>
+                </Stack>
+
+                <Chip
+                  size="small"
+                  label={
+                    atendimentoAtual
+                      ? "Em atendimento"
+                      : "Disponível"
+                  }
+                  color={
+                    atendimentoAtual
+                      ? "warning"
+                      : "success"
+                  }
+                  variant="outlined"
+                  sx={{
+                    bgcolor: atendimentoAtual
+                      ? "warning.light"
+                      : "success.light",
+                    borderColor: "transparent",
+                  }}
+                />
               </Stack>
+
 
               <AtendimentoAtual
                 atendimento={atendimentoAtual}
@@ -381,7 +508,31 @@ export default function AtendimentoServidor() {
               />
             </Stack>
 
-            <Stack spacing={2}>
+            
+            <Stack
+              spacing={2}
+              sx={{
+                minWidth: 0,
+                minHeight: 520,
+                p: {
+                  xs: 2,
+                  md: 2.5,
+                },
+                bgcolor: "background.paper",
+                border: 1,
+                borderColor: "divider",
+                borderTop: 4,
+                borderTopColor: "success.main",
+                borderRadius: 3,
+                boxShadow: "0 3px 12px rgba(31, 41, 55, 0.06)",
+
+                gridColumn: {
+                  xs: "auto",
+                  md: "1 / -1",
+                  xl: "auto",
+                },
+              }}
+            >
               <Stack
                 direction="row"
                 justifyContent="space-between"
@@ -392,20 +543,48 @@ export default function AtendimentoServidor() {
                   spacing={1}
                   alignItems="center"
                 >
-                  <HistoryIcon color="action" />
-
-                  <Typography
-                    variant="h6"
-                    fontWeight={800}
+                  <Box
+                    sx={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: 2,
+                      display: "grid",
+                      placeItems: "center",
+                      bgcolor: "success.light",
+                      color: "success.main",
+                      flexShrink: 0,
+                    }}
                   >
-                    Finalizados hoje
-                  </Typography>
+                    <HistoryIcon fontSize="small" />
+                  </Box>
+
+                  <Box>
+                    <Typography
+                      variant="h6"
+                      fontWeight={800}
+                      color="text.primary"
+                    >
+                      Finalizados hoje
+                    </Typography>
+
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                    >
+                      Atendimentos concluídos neste setor
+                    </Typography>
+                  </Box>
                 </Stack>
 
-                <Chip
+               <Chip
                   size="small"
-                  label={finalizados.length}
+                  label={`${finalizados.length} concluídos`}
                   color="success"
+                  variant="outlined"
+                  sx={{
+                    bgcolor: "success.light",
+                    borderColor: "transparent",
+                  }}
                 />
               </Stack>
 
