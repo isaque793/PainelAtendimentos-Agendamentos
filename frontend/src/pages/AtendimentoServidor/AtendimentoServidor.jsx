@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import HeaderInstitucional
+  from "../../components/layout/HeaderInstitucional";
+
 import {
   Alert,
   Box,
@@ -13,8 +16,6 @@ import {
 import GroupsOutlinedIcon
   from "@mui/icons-material/GroupsOutlined";
 
-import RefreshOutlinedIcon
-  from "@mui/icons-material/RefreshOutlined";
 
 import SupportAgentIcon
   from "@mui/icons-material/SupportAgent";
@@ -235,69 +236,49 @@ export default function AtendimentoServidor() {
     }
   }
 
-  return (
-    <Box sx={{ width: "100%" }}>
-      <Container maxWidth="xl" disableGutters>
-        <Stack spacing={3}>
-          <Stack
-            direction={{
-              xs: "column",
-              md: "row",
-            }}
-            justifyContent="space-between"
-            alignItems={{
-              xs: "flex-start",
-              md: "center",
-            }}
-            gap={2}
-          >
-            <Box>
-              <Typography
-                variant="h4"
-                fontWeight={800}
-              >
-                Painel de Atendimentos
-              </Typography>
+  
+    return (
+  <Box
+    sx={{
+      width: "100%",
+      minHeight: "100vh",
+      py: {
+        xs: 2,
+        md: 3,
+      },
+      px: {
+        xs: 1.5,
+        sm: 2,
+        md: 3,
+      },
+    }}
+  >
+    <Container
+  maxWidth={false}
+  disableGutters
+  sx={{
+    maxWidth: "1800px",
+    mx: "auto",
+  }}
+>
+  <Stack spacing={3}>
+    <HeaderInstitucional
+      setorNome={acessoServidor?.setor_nome}
+      servidorNome={acessoServidor?.servidor_nome}
+      servidorMasp={acessoServidor?.servidor_masp}
+      ultimaAtualizacao={ultimaAtualizacao}
+      carregando={carregando}
+      aoAtualizar={() => carregarPainel()}
+    />
 
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                mt={0.5}
-              >
-                {acessoServidor?.servidor_nome
-                  ? `Logado como ${acessoServidor.servidor_nome} — ${acessoServidor.setor_nome}`
-                  : "Gerencie a fila e os atendimentos em andamento."}
-              </Typography>
-            </Box>
-
-            <Chip
-              icon={<RefreshOutlinedIcon />}
-              label={
-                ultimaAtualizacao
-                  ? `Atualizado às ${ultimaAtualizacao.toLocaleTimeString(
-                      "pt-BR",
-                      {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                      }
-                    )}`
-                  : "Carregando dados..."
-              }
-              variant="outlined"
-              onClick={() => carregarPainel()}
-              clickable
-            />
-          </Stack>
-
-          {erro && (
-            <Alert
-              severity="error"
-              onClose={() => setErro("")}
-            >
-              {erro}
-            </Alert>
-          )}
+    {erro && (
+      <Alert
+        severity="error"
+        onClose={() => setErro("")}
+      >
+        {erro}
+      </Alert>
+    )}
 
           <Box
             sx={{
