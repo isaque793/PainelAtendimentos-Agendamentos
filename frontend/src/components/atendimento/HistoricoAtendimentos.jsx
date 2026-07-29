@@ -1,18 +1,25 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import AccessTimeOutlinedIcon
+  from "@mui/icons-material/AccessTimeOutlined";
+import BadgeOutlinedIcon
+  from "@mui/icons-material/BadgeOutlined";
+import DescriptionOutlinedIcon
+  from "@mui/icons-material/DescriptionOutlined";
+import SearchOutlinedIcon
+  from "@mui/icons-material/SearchOutlined";
+
 import {
   Box,
   Card,
   CardContent,
-  Divider,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
 
-import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import AppInfoCard from "../ui/AppInfoCard";
 
 import {
   apenasDigitos,
@@ -39,14 +46,17 @@ export default function HistoricoAtendimentos({
   const [termo, setTermo] = useState("");
   const navigate = useNavigate();
 
-  // A busca compara sempre só os dígitos do documento: assim funciona
-  // tanto se o servidor digitar "144.146.336-48" quanto "14414633648".
-  const termoNormalizado = termo.trim().toLowerCase();
+  const termoNormalizado = termo
+    .trim()
+    .toLowerCase();
+
   const digitosBuscados = apenasDigitos(termo);
 
   const atendimentosFiltrados = termoNormalizado
     ? atendimentos.filter((atendimento) => {
-        const nome = (atendimento?.cidadao?.nome || "").toLowerCase();
+        const nome = (
+          atendimento?.cidadao?.nome || ""
+        ).toLowerCase();
 
         if (nome.includes(termoNormalizado)) {
           return true;
@@ -56,103 +66,119 @@ export default function HistoricoAtendimentos({
           return false;
         }
 
-        const cpf = apenasDigitos(atendimento?.cidadao?.cpf);
-        const masp = apenasDigitos(atendimento?.cidadao?.masp);
+        const cpf = apenasDigitos(
+          atendimento?.cidadao?.cpf
+        );
+
+        const masp = apenasDigitos(
+          atendimento?.cidadao?.masp
+        );
 
         return (
-          cpf.includes(digitosBuscados) || masp.includes(digitosBuscados)
+          cpf.includes(digitosBuscados) ||
+          masp.includes(digitosBuscados)
         );
       })
     : atendimentos;
 
- return (
-  <Card
-    variant="outlined"
-    sx={{
-      height: "100%",
-      minHeight: 360,
-      borderRadius: 3,
-      borderColor: "divider",
-      bgcolor: "background.paper",
-      boxShadow: "0 3px 12px rgba(31, 41, 55, 0.06)",
-    }}
-  >
-    <CardContent
+
+  return (
+    <Card
+      variant="outlined"
       sx={{
-        p: {
-          xs: 2,
-          md: 2.5,
-        },
-        "&:last-child": {
-          pb: {
-            xs: 2,
-            md: 2.5,
-          },
-        },
+        height: "100%",
+        minHeight: 360,
+
+        backgroundColor: "#FFFFFF",
+
+        backgroundImage: `
+          linear-gradient(
+            145deg,
+            #FFFFFF 0%,
+            #FCFDFE 60%,
+            #F8FAFC 100%
+          )
+        `,
+
+        borderColor: "divider",
+        borderRadius: "12px",
+
+        boxShadow:
+          "0 8px 24px rgba(15, 23, 42, 0.04)",
       }}
     >
-      <Stack spacing={2}>
-        <TextField
-          size="small"
-          fullWidth
-          value={termo}
-          onChange={(evento) =>
-            setTermo(
-              mascararDocumentoOuNome(evento.target.value)
-            )
-          }
-          placeholder="Buscar por nome, CPF ou MASP"
-          InputProps={{
-            startAdornment: (
-              <SearchOutlinedIcon
-                fontSize="small"
-                color="action"
-                sx={{ mr: 1 }}
-              />
-            ),
-          }}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: 2.5,
-              bgcolor: "background.default",
+      <CardContent
+        sx={{
+          p: {
+            xs: 2,
+            md: 2.25,
+          },
+
+          "&:last-child": {
+            pb: {
+              xs: 2,
+              md: 2.25,
             },
-          }}
-        />
+          },
+        }}
+      >
+        <Stack spacing={1.25}>
+          <TextField
+            size="small"
+            fullWidth
+            value={termo}
+            onChange={(evento) =>
+              setTermo(
+                mascararDocumentoOuNome(
+                  evento.target.value
+                )
+              )
+            }
+            placeholder="Buscar por nome, CPF ou MASP"
+            InputProps={{
+              startAdornment: (
+                <SearchOutlinedIcon
+                  fontSize="small"
+                  color="action"
+                  sx={{ mr: 1 }}
+                />
+              ),
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
 
-        <Divider />
+                backgroundColor:
+                  "rgba(248, 250, 252, 0.82)",
+              },
+            }}
+          />
 
-        {atendimentosFiltrados.length === 0 ? (
           <Box
             sx={{
-              minHeight: 240,
-              display: "grid",
-              placeItems: "center",
-              px: 2,
+              height: "1px",
+              backgroundColor: "divider",
             }}
-          >
-            <Stack
-              spacing={1.25}
-              alignItems="center"
-              textAlign="center"
-            >
-              <Box
-                sx={{
-                  width: 54,
-                  height: 54,
-                  borderRadius: "50%",
-                  display: "grid",
-                  placeItems: "center",
-                  bgcolor: "action.hover",
-                }}
-              >
-                <CheckCircleOutlinedIcon
-                  sx={{
-                    fontSize: 28,
-                    color: "text.disabled",
-                  }}
-                />
-              </Box>
+          />
 
+          {atendimentosFiltrados.length === 0 ? (
+            <Box
+              sx={{
+                minHeight: 240,
+
+                display: "grid",
+                placeItems: "center",
+
+                px: 3,
+
+                backgroundColor:
+                  "rgba(248, 250, 252, 0.55)",
+
+                border: "1px dashed",
+                borderColor: "divider",
+                borderRadius: "8px",
+              }}
+            >
               <Typography
                 variant="body2"
                 color="text.secondary"
@@ -162,148 +188,110 @@ export default function HistoricoAtendimentos({
                   ? "Nenhum atendimento foi finalizado hoje."
                   : "Nenhum resultado para essa busca."}
               </Typography>
+            </Box>
+          ) : (
+            <Stack spacing={1.25}>
+              {atendimentosFiltrados.map(
+                (atendimento) => {
+                  const nome =
+                    atendimento?.cidadao?.nome ||
+                    `Cidadão #${atendimento?.cidadao_id}`;
+
+                  const assunto =
+                    atendimento?.assunto ||
+                    "Assunto não informado";
+
+                  const documentos =
+                    resumoDocumentos(
+                      atendimento?.cidadao
+                    );
+
+                  return (
+                    <AppInfoCard
+                      key={atendimento.id}
+                      titulo={nome}
+                      status="Concluído"
+                      cor="success"
+                      aoClicar={() =>
+                        navigate(
+                          `/direcao/pessoa/${atendimento.cidadao_id}`
+                        )
+                      }
+                      detalhes={
+                        <>
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            spacing={0.6}
+                          >
+                            <DescriptionOutlinedIcon
+                              fontSize="small"
+                              color="action"
+                            />
+
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              fontWeight={600}
+                            >
+                              {assunto}
+                            </Typography>
+                          </Stack>
+
+                          {documentos && (
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              spacing={0.6}
+                            >
+                              <BadgeOutlinedIcon
+                                fontSize="small"
+                                color="action"
+                              />
+
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {documentos}
+                              </Typography>
+                            </Stack>
+                          )}
+
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            spacing={0.6}
+                          >
+                            <AccessTimeOutlinedIcon
+                              fontSize="small"
+                              color="action"
+                            />
+
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              fontWeight={600}
+                              sx={{
+                                fontVariantNumeric:
+                                  "tabular-nums",
+                              }}
+                            >
+                              {formatarHorario(
+                                atendimento?.data_finalizacao
+                              )}
+                            </Typography>
+                          </Stack>
+                        </>
+                      }
+                    />
+                  );
+                }
+              )}
             </Stack>
-          </Box>
-        ) : (
-          <Stack spacing={1.25}>
-            {atendimentosFiltrados.map((atendimento) => {
-              const nome =
-                atendimento?.cidadao?.nome ||
-                `Cidadão #${atendimento?.cidadao_id}`;
-
-              return (
-                <Box
-                  key={atendimento.id}
-                  onClick={() =>
-                    navigate(
-                      `/direcao/pessoa/${atendimento.cidadao_id}`
-                    )
-                  }
-                  sx={{
-                    position: "relative",
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    border: 1,
-                    borderColor: "divider",
-                    borderRadius: 2.5,
-                    bgcolor: "background.paper",
-                    transition:
-                      "transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease",
-
-                    "&::before": {
-                      content: '""',
-                      position: "absolute",
-                      top: 0,
-                      bottom: 0,
-                      left: 0,
-                      width: 4,
-                      bgcolor: "success.main",
-                    },
-
-                    "&:hover": {
-                      transform: "translateY(-2px)",
-                      borderColor: "success.light",
-                      boxShadow:
-                        "0 6px 16px rgba(31, 41, 55, 0.10)",
-                    },
-                  }}
-                >
-                  <Stack
-                    direction="row"
-                    spacing={1.25}
-                    alignItems="flex-start"
-                    sx={{
-                      p: 1.5,
-                      pl: 2,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 2,
-                        display: "grid",
-                        placeItems: "center",
-                        bgcolor: "success.light",
-                        color: "success.main",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <CheckCircleOutlinedIcon
-                        fontSize="small"
-                      />
-                    </Box>
-
-                    <Box
-                      sx={{
-                        flexGrow: 1,
-                        minWidth: 0,
-                      }}
-                    >
-                      <Typography
-                        variant="body2"
-                        fontWeight={800}
-                        color="text.primary"
-                        noWrap
-                      >
-                        {nome}
-                      </Typography>
-
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        display="block"
-                        noWrap
-                        sx={{ mt: 0.35 }}
-                      >
-                        {atendimento?.assunto ||
-                          "Assunto não informado"}
-                      </Typography>
-
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        display="block"
-                        noWrap
-                        sx={{ mt: 0.2 }}
-                      >
-                        {resumoDocumentos(
-                          atendimento?.cidadao
-                        ) || "Sem documento cadastrado"}
-                      </Typography>
-                    </Box>
-
-                    <Stack
-                      spacing={0.4}
-                      alignItems="flex-end"
-                      flexShrink={0}
-                    >
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        fontWeight={700}
-                      >
-                        {formatarHorario(
-                          atendimento?.data_finalizacao
-                        )}
-                      </Typography>
-
-                      <Typography
-                        variant="caption"
-                        color="success.main"
-                        fontWeight={800}
-                      >
-                        Concluído
-                      </Typography>
-                    </Stack>
-                  </Stack>
-                </Box>
-              );
-            })}
-          </Stack>
-        )}
-      </Stack>
-    </CardContent>
-  </Card>
-);
+          )}
+        </Stack>
+      </CardContent>
+    </Card>
+  );
 }

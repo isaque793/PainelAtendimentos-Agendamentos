@@ -306,17 +306,29 @@ export default function AtendimentoServidor() {
                   sx={{
                     minWidth: 0,
                     minHeight: 520,
+
                     p: {
                       xs: 2,
                       md: 2.5,
                     },
-                    bgcolor: "background.paper",
-                    border: 1,
+
+                    backgroundColor: "#FFFFFF",
+
+                    backgroundImage: `
+                      linear-gradient(
+                        145deg,
+                        #FFFFFF 0%,
+                        #FCFDFE 58%,
+                        #F8FAFC 100%
+                      )
+                    `,
+
+                    border: "1px solid",
                     borderColor: "divider",
-                    borderTop: 4,
-                    borderTopColor: "primary.main",
-                    borderRadius: 3,
-                    boxShadow: "0 3px 12px rgba(31, 41, 55, 0.06)",
+                    borderRadius: 4,
+
+                    boxShadow:
+                      "0 10px 28px rgba(15, 23, 42, 0.05)",
                   }}
                 >
 
@@ -332,14 +344,19 @@ export default function AtendimentoServidor() {
                 >
                   <Box
                     sx={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: 2,
+                      width: 42,
+                      height: 42,
+
                       display: "grid",
                       placeItems: "center",
-                      bgcolor: "primary.light",
-                      color: "primary.dark",
+
                       flexShrink: 0,
+
+                      color: "#1D4ED8",
+                      backgroundColor: "#EFF6FF",
+
+                      border: "1px solid #DBEAFE",
+                      borderRadius: 2.5,
                     }}
                   >
                     <GroupsOutlinedIcon fontSize="small" />
@@ -380,13 +397,17 @@ export default function AtendimentoServidor() {
                 <Box
                   sx={{
                     minHeight: 360,
-                    border: 1,
-                    borderColor: "divider",
-                    borderRadius: 3,
-                    bgcolor: "background.paper",
+
                     display: "grid",
                     placeItems: "center",
+
                     p: 3,
+
+                    backgroundColor: "rgba(248, 250, 252, 0.72)",
+
+                    border: "1px dashed",
+                    borderColor: "divider",
+                    borderRadius: 3,
                   }}
                 >
                   <Typography
@@ -415,19 +436,44 @@ export default function AtendimentoServidor() {
             <Stack
               spacing={2}
               sx={{
+                position: "relative",
                 minWidth: 0,
                 minHeight: 520,
+
                 p: {
                   xs: 2,
                   md: 2.5,
                 },
-                bgcolor: "background.paper",
-                border: 1,
-                borderColor: "divider",
-                borderTop: 4,
-                borderTopColor: "warning.main",
-                borderRadius: 3,
-                boxShadow: "0 5px 18px rgba(31, 41, 55, 0.09)",
+
+                backgroundColor: "#FFFFFF",
+
+                backgroundImage: `
+                  radial-gradient(
+                    circle at top right,
+                    rgba(251, 191, 36, 0.08),
+                    transparent 34%
+                  ),
+                  linear-gradient(
+                    145deg,
+                    #FFFFFF 0%,
+                    #FCFDFE 60%,
+                    #F8FAFC 100%
+                  )
+                `,
+
+                border: "1px solid",
+                borderColor: atendimentoAtual
+                  ? "warning.light"
+                  : "divider",
+
+                borderRadius: 4,
+
+                boxShadow: atendimentoAtual
+                  ? "0 14px 34px rgba(15, 23, 42, 0.065)"
+                  : "0 10px 28px rgba(15, 23, 42, 0.05)",
+
+                transition:
+                  "border-color 180ms ease, box-shadow 180ms ease",
               }}
             >
               
@@ -444,14 +490,19 @@ export default function AtendimentoServidor() {
                 >
                   <Box
                     sx={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: 2,
+                      width: 42,
+                      height: 42,
+
                       display: "grid",
                       placeItems: "center",
-                      bgcolor: "warning.light",
-                      color: "warning.main",
+
                       flexShrink: 0,
+
+                      color: "#C75B00",
+                      backgroundColor: "#FFF7ED",
+
+                      border: "1px solid #FED7AA",
+                      borderRadius: 2.5,
                     }}
                   >
                     <SupportAgentIcon fontSize="small" />
@@ -512,26 +563,38 @@ export default function AtendimentoServidor() {
             <Stack
               spacing={2}
               sx={{
-                minWidth: 0,
-                minHeight: 520,
-                p: {
-                  xs: 2,
-                  md: 2.5,
-                },
-                bgcolor: "background.paper",
-                border: 1,
-                borderColor: "divider",
-                borderTop: 4,
-                borderTopColor: "success.main",
-                borderRadius: 3,
-                boxShadow: "0 3px 12px rgba(31, 41, 55, 0.06)",
+                  minWidth: 0,
+                  minHeight: 520,
 
-                gridColumn: {
-                  xs: "auto",
-                  md: "1 / -1",
-                  xl: "auto",
-                },
-              }}
+                  p: {
+                    xs: 2,
+                    md: 2.5,
+                  },
+
+                  backgroundColor: "#FFFFFF",
+
+                  backgroundImage: `
+                    linear-gradient(
+                      145deg,
+                      #FFFFFF 0%,
+                      #FCFDFE 58%,
+                      #F8FAFC 100%
+                    )
+                  `,
+
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 4,
+
+                  boxShadow:
+                    "0 10px 28px rgba(15, 23, 42, 0.05)",
+
+                  gridColumn: {
+                    xs: "auto",
+                    md: "1 / -1",
+                    xl: "auto",
+                  },
+                }}
             >
               <Stack
                 direction="row"
@@ -544,15 +607,20 @@ export default function AtendimentoServidor() {
                   alignItems="center"
                 >
                   <Box
-                    sx={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: 2,
+                   sx={{
+                      width: 42,
+                      height: 42,
+
                       display: "grid",
                       placeItems: "center",
-                      bgcolor: "success.light",
-                      color: "success.main",
+
                       flexShrink: 0,
+
+                      color: "#287D3C",
+                      backgroundColor: "#F0FDF4",
+
+                      border: "1px solid #BBF7D0",
+                      borderRadius: 2.5,
                     }}
                   >
                     <HistoryIcon fontSize="small" />

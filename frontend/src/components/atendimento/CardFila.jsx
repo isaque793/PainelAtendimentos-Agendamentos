@@ -1,30 +1,30 @@
 import AccessTimeOutlinedIcon
   from "@mui/icons-material/AccessTimeOutlined";
 
+import BadgeOutlinedIcon
+  from "@mui/icons-material/BadgeOutlined";
+
 import CampaignOutlinedIcon
   from "@mui/icons-material/CampaignOutlined";
 
 import DescriptionOutlinedIcon
   from "@mui/icons-material/DescriptionOutlined";
 
-import PersonOutlineOutlinedIcon
-  from "@mui/icons-material/PersonOutlineOutlined";
-
 import PlayArrowOutlinedIcon
   from "@mui/icons-material/PlayArrowOutlined";
 
 import {
-  Box,
   Button,
-  Card,
-  CardContent,
   Chip,
-  Divider,
   Stack,
   Typography,
 } from "@mui/material";
 
-import { resumoDocumentos } from "../../utils/formatacao";
+import AppInfoCard from "../ui/AppInfoCard";
+
+import {
+  resumoDocumentos,
+} from "../../utils/formatacao";
 
 
 function formatarHorario(data) {
@@ -32,10 +32,13 @@ function formatarHorario(data) {
     return "--:--";
   }
 
-  return new Date(data).toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return new Date(data).toLocaleTimeString(
+    "pt-BR",
+    {
+      hour: "2-digit",
+      minute: "2-digit",
+    }
+  );
 }
 
 
@@ -64,8 +67,16 @@ function calcularTempoEspera(dataSolicitacao) {
     return `Aguardando há ${diferencaEmMinutos} minutos`;
   }
 
-  const horas = Math.floor(diferencaEmMinutos / 60);
-  const minutos = diferencaEmMinutos % 60;
+  const horas = Math.floor(
+    diferencaEmMinutos / 60
+  );
+
+  const minutos =
+    diferencaEmMinutos % 60;
+
+  if (minutos === 0) {
+    return `Aguardando há ${horas}h`;
+  }
 
   return `Aguardando há ${horas}h ${minutos}min`;
 }
@@ -83,11 +94,17 @@ export default function CardFila({
     cidadao?.nome ||
     `Cidadão #${atendimento?.cidadao_id}`;
 
+  const documentos =
+    resumoDocumentos(cidadao) ||
+    "Sem documento cadastrado";
+
   const prioritario =
-    atendimento?.prioridade === "PRIORITARIO";
+    atendimento?.prioridade ===
+    "PRIORITARIO";
 
   const convocado =
     atendimento?.status === "CONVOCADO";
+
 
   function executarAcao() {
     if (convocado) {
@@ -103,182 +120,70 @@ export default function CardFila({
     }
   }
 
+
+  const status = convocado
+    ? "Convocado"
+    : prioritario
+      ? "Prioritário"
+      : "Aguardando";
+
+  const cor = convocado
+    ? "primary"
+    : prioritario
+      ? "warning"
+      : "neutral";
+
+
   return (
-  <Card
-    variant="outlined"
-    sx={{
-      position: "relative",
-      overflow: "hidden",
-      borderRadius: 3,
-      borderColor: "divider",
-      bgcolor: "background.paper",
-      boxShadow: "0 3px 10px rgba(31, 41, 55, 0.07)",
-      transition: "transform 0.2s ease, box-shadow 0.2s ease",
-
-      "&::before": {
-        content: '""',
-        position: "absolute",
-        top: 0,
-        bottom: 0,
-        left: 0,
-        width: 4,
-        bgcolor: prioritario
-          ? "warning.main"
-          : convocado
-            ? "info.main"
-            : "primary.main",
-      },
-
-      "&:hover": {
-        transform: "translateY(-2px)",
-        boxShadow: "0 7px 18px rgba(31, 41, 55, 0.12)",
-      },
-    }}
-  >
-    <CardContent
-      sx={{
-        p: 2,
-        pl: 2.5,
-        "&:last-child": {
-          pb: 2,
-        },
-      }}
-    >
-      <Stack spacing={1.75}>
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="flex-start"
-          gap={1.5}
-        >
+    <AppInfoCard
+      titulo={nomeCidadao}
+      status={status}
+      cor={cor}
+      destacado={convocado}
+      detalhes={
+        <>
           <Stack
             direction="row"
-            spacing={1.25}
-            alignItems="flex-start"
-            sx={{
-              minWidth: 0,
-              flex: 1,
-            }}
-          >
-            <Box
-              sx={{
-                width: 42,
-                height: 42,
-                borderRadius: 2,
-                display: "grid",
-                placeItems: "center",
-                bgcolor: "primary.light",
-                color: "primary.main",
-                flexShrink: 0,
-              }}
-            >
-              <PersonOutlineOutlinedIcon />
-            </Box>
-
-            <Box
-              sx={{
-                minWidth: 0,
-                flex: 1,
-              }}
-            >
-              <Typography
-                variant="subtitle1"
-                fontWeight={800}
-                noWrap
-                color="text.primary"
-              >
-                {nomeCidadao}
-              </Typography>
-
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                noWrap
-                sx={{ mt: 0.25 }}
-              >
-                {resumoDocumentos(cidadao) ||
-                  "Sem documento cadastrado"}
-              </Typography>
-
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{
-                  display: "block",
-                  mt: 0.4,
-                }}
-              >
-                Chegada às{" "}
-                {formatarHorario(
-                  atendimento?.data_solicitacao
-                )}
-              </Typography>
-            </Box>
-          </Stack>
-
-          <Stack
-            spacing={0.65}
-            alignItems="flex-end"
-            flexShrink={0}
-          >
-            <Chip
-              size="small"
-              label={prioritario ? "Prioritário" : "Normal"}
-              color={prioritario ? "warning" : "default"}
-              variant={prioritario ? "filled" : "outlined"}
-              sx={{
-                fontWeight: 700,
-              }}
-            />
-
-            {convocado && (
-              <Chip
-                size="small"
-                label="Convocado"
-                color="info"
-                sx={{
-                  fontWeight: 700,
-                }}
-              />
-            )}
-          </Stack>
-        </Stack>
-
-        <Divider />
-
-        <Stack spacing={1}>
-          <Stack
-            direction="row"
-            spacing={1}
-            alignItems="flex-start"
+            alignItems="center"
+            spacing={0.6}
           >
             <DescriptionOutlinedIcon
               fontSize="small"
-              color="primary"
+              color="action"
             />
 
-            <Box sx={{ minWidth: 0 }}>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-              >
-                Assunto
-              </Typography>
-
-              <Typography
-                variant="body2"
-                fontWeight={700}
-                color="text.primary"
-              >
-                {atendimento?.assunto || "Não informado"}
-              </Typography>
-            </Box>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              fontWeight={600}
+            >
+              {atendimento?.assunto ||
+                "Assunto não informado"}
+            </Typography>
           </Stack>
 
           <Stack
             direction="row"
-            spacing={1}
             alignItems="center"
+            spacing={0.6}
+          >
+            <BadgeOutlinedIcon
+              fontSize="small"
+              color="action"
+            />
+
+            <Typography
+              variant="caption"
+              color="text.secondary"
+            >
+              {documentos}
+            </Typography>
+          </Stack>
+
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={0.6}
           >
             <AccessTimeOutlinedIcon
               fontSize="small"
@@ -286,20 +191,60 @@ export default function CardFila({
             />
 
             <Typography
-              variant="body2"
+              variant="caption"
               color="text.secondary"
-              fontWeight={500}
+              fontWeight={600}
+              sx={{
+                fontVariantNumeric:
+                  "tabular-nums",
+              }}
             >
-              {calcularTempoEspera(
+              Chegada às{" "}
+              {formatarHorario(
                 atendimento?.data_solicitacao
               )}
             </Typography>
           </Stack>
-        </Stack>
 
+          <Chip
+            size="small"
+            label={calcularTempoEspera(
+              atendimento?.data_solicitacao
+            )}
+            variant="outlined"
+            sx={{
+              height: 24,
+
+              color: prioritario
+                ? "#C75B00"
+                : "#475569",
+
+              backgroundColor: prioritario
+                ? "#FFF7ED"
+                : "#F8FAFC",
+
+              borderColor: prioritario
+                ? "#FED7AA"
+                : "#E2E8F0",
+
+              borderRadius: "6px",
+              fontWeight: 700,
+
+              "& .MuiChip-label": {
+                px: 1,
+              },
+            }}
+          />
+        </>
+      }
+      rodape={
         <Button
           variant="contained"
-          color={convocado ? "success" : "primary"}
+          color={
+            convocado
+              ? "success"
+              : "primary"
+          }
           startIcon={
             convocado
               ? <PlayArrowOutlinedIcon />
@@ -309,16 +254,14 @@ export default function CardFila({
           disabled={carregando}
           fullWidth
           sx={{
-            minHeight: 42,
-            borderRadius: 2.5,
+            minHeight: 40,
+            borderRadius: "8px",
             textTransform: "none",
             fontWeight: 800,
             boxShadow: "none",
 
             "&:hover": {
-              boxShadow: convocado
-                ? "0 5px 12px rgba(46, 125, 50, 0.22)"
-                : "0 5px 12px rgba(0, 92, 169, 0.22)",
+              boxShadow: "none",
             },
           }}
         >
@@ -326,10 +269,11 @@ export default function CardFila({
             ? "Processando..."
             : convocado
               ? "Iniciar atendimento"
-              : `Chamar ${nomeCidadao.split(" ")[0]}`}
+              : `Chamar ${
+                  nomeCidadao.split(" ")[0]
+                }`}
         </Button>
-      </Stack>
-    </CardContent>
-  </Card>
-);
+      }
+    />
+  );
 }

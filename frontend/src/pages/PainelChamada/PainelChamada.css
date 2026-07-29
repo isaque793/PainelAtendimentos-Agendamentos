@@ -1,94 +1,502 @@
-.painel-chamada {
+.painel-tv {
   min-height: 100vh;
-  background: #0f172a;
-  color: #fff;
-  font-family: "Segoe UI", Arial, sans-serif;
-  padding: 32px 48px;
-  box-sizing: border-box;
-}
+  padding: 28px 36px 20px;
 
-.painel-chamada-header {
   display: flex;
+  flex-direction: column;
+  gap: 22px;
+
+  background-color: var(--cor-superficie, #f1f5f9);
+  color: #0f172a;
+}
+
+
+/* =========================================================
+   CABEÇALHO
+   ========================================================= */
+
+.painel-tv-header {
+  min-height: 78px;
+  padding: 0 4px 20px;
+
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: baseline;
-  border-bottom: 2px solid #1e293b;
-  padding-bottom: 20px;
-  margin-bottom: 32px;
+  gap: 24px;
+
+  border-bottom: 1px solid var(--cor-borda, #e2e8f0);
 }
 
-.painel-chamada-header h1 {
-  font-size: 32px;
-  margin: 0;
+.painel-tv-titulo {
+  color: #0f172a;
+  letter-spacing: -0.04em;
 }
 
-.painel-chamada-header .relogio {
-  font-size: 22px;
-  color: #94a3b8;
+.painel-tv-relogio {
+  min-width: 170px;
+  padding: 12px 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  color: #1d4ed8;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+
+  font-size: 1.1rem;
   font-variant-numeric: tabular-nums;
 }
 
-.chamada-atual {
-  background: linear-gradient(135deg, #2563eb, #1e40af);
-  border-radius: 20px;
-  padding: 48px;
-  text-align: center;
-  margin-bottom: 40px;
-  box-shadow: 0 20px 50px rgba(37, 99, 235, 0.35);
+.painel-tv-relogio svg {
+  font-size: 1.45rem;
 }
 
-.chamada-atual .rotulo {
-  font-size: 20px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: #bfdbfe;
-  margin-bottom: 12px;
+.botao-som {
+  width: 48px;
+  height: 48px;
+
+  color: #1d4ed8 !important;
+  background-color: #eff6ff !important;
+  border: 1px solid #bfdbfe !important;
+  border-radius: 12px !important;
+
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease !important;
 }
 
-.chamada-atual .nome {
-  font-size: 64px;
-  font-weight: 800;
-  line-height: 1.15;
+.botao-som:hover {
+  background-color: #dbeafe !important;
+  transform: translateY(-1px);
 }
 
-.chamada-atual .guiche {
-  font-size: 28px;
-  color: #dbeafe;
-  margin-top: 16px;
+
+/* =========================================================
+   CONTEÚDO PRINCIPAL
+   ========================================================= */
+
+.painel-tv-conteudo {
+  flex: 1;
+  min-height: 0;
+
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(340px, 0.85fr);
+  gap: 22px;
 }
 
-.chamada-vazia {
-  text-align: center;
-  color: #64748b;
-  font-size: 22px;
-  padding: 60px 0;
-}
 
-.lista-anteriores h2 {
-  font-size: 18px;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin-bottom: 16px;
-}
+/* =========================================================
+   CHAMADA ATUAL
+   ========================================================= */
 
-.linha-anterior {
+.card-chamada-atual {
+  min-height: 540px;
+
   display: flex;
-  justify-content: space-between;
+
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(147, 197, 253, 0.32),
+      transparent 34%
+    ),
+    linear-gradient(
+      145deg,
+      #ffffff 0%,
+      #f8fbff 55%,
+      #eff6ff 100%
+    ) !important;
+
+  border: 1px solid #bfdbfe;
+  border-radius: 20px !important;
+
+  box-shadow:
+    0 16px 45px rgba(15, 23, 42, 0.08),
+    0 4px 12px rgba(37, 99, 235, 0.06) !important;
+
+  animation: entrada-chamada 420ms ease-out;
+}
+
+.card-chamada-conteudo {
+  width: 100%;
+  padding: 48px !important;
+
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 16px 20px;
-  background: #1e293b;
-  border-radius: 12px;
-  margin-bottom: 10px;
-  font-size: 22px;
+  justify-content: center;
+  gap: 42px;
+
+  text-align: center;
 }
 
-.linha-anterior .guiche-tag {
+.chip-chamando {
+  min-height: 42px;
+
+  padding-inline: 8px !important;
+
+  color: #1d4ed8 !important;
+  background-color: #dbeafe !important;
+
+  border: 1px solid #93c5fd !important;
+
+  font-size: 0.95rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase;
+}
+
+.chip-chamando .MuiChip-icon {
+  color: #1d4ed8 !important;
+}
+
+.nome-chamada-atual {
+  max-width: 100%;
+
+  color: #0f172a;
+
+  font-size: clamp(3.4rem, 5.4vw, 6.4rem) !important;
+  font-weight: 900 !important;
+  line-height: 1.02 !important;
+  letter-spacing: -0.055em !important;
+
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.destino-chamada {
+  min-width: min(520px, 90%);
+  padding: 20px 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+
+  color: #ffffff;
+  background-color: #1d4ed8;
+  border-radius: 16px;
+
+  box-shadow: 0 12px 26px rgba(29, 78, 216, 0.22);
+}
+
+.destino-chamada > svg {
+  flex-shrink: 0;
+  font-size: 2.6rem;
+}
+
+.destino-instrucao {
+  color: #bfdbfe;
+  font-weight: 600 !important;
+  text-align: left;
+}
+
+.destino-nome {
+  color: #ffffff;
+
+  font-size: clamp(1.75rem, 2.4vw, 2.7rem) !important;
+  font-weight: 900 !important;
+  line-height: 1.1 !important;
+  text-align: left;
+}
+
+
+/* =========================================================
+   ESTADO SEM CHAMADA
+   ========================================================= */
+
+.painel-sem-chamada {
+  max-width: 520px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.painel-sem-chamada > svg {
+  padding: 18px;
+
+  color: #64748b;
+  background-color: #e2e8f0;
+  border-radius: 50%;
+
+  font-size: 5rem;
+}
+
+
+/* =========================================================
+   ÚLTIMAS CHAMADAS
+   ========================================================= */
+
+.card-ultimas-chamadas {
+  min-height: 540px;
+
+  overflow: hidden;
+
+  background-color: #ffffff !important;
+  border: 1px solid var(--cor-borda, #e2e8f0);
+  border-radius: 20px !important;
+
+  box-shadow: 0 16px 45px rgba(15, 23, 42, 0.06) !important;
+}
+
+.ultimas-chamadas-conteudo {
+  height: 100%;
+  padding: 26px !important;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.ultimas-chamadas-header {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--cor-borda, #e2e8f0);
+}
+
+.lista-ultimas-chamadas {
+  flex: 1;
+  min-height: 0;
+
+  margin-top: 20px;
+
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.lista-ultimas-chamadas::-webkit-scrollbar {
+  width: 6px;
+}
+
+.lista-ultimas-chamadas::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.lista-ultimas-chamadas::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 999px;
+}
+
+.item-ultima-chamada {
+  padding: 18px;
+
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.item-ultima-chamada:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.item-ultima-chamada:first-child {
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.item-ultima-chamada-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nome-ultima-chamada {
+  min-width: 0;
+
+  color: #0f172a;
+
+  font-size: 1.1rem !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+
+  overflow-wrap: anywhere;
+}
+
+.ultimas-chamadas-vazia {
+  flex: 1;
+  min-height: 260px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+
   color: #94a3b8;
-  font-size: 18px;
 }
 
-@media (max-width: 700px) {
-  .painel-chamada { padding: 20px; }
-  .chamada-atual .nome { font-size: 40px; }
-  .chamada-atual { padding: 28px; }
+.ultimas-chamadas-vazia > svg {
+  font-size: 3.2rem;
+}
+
+
+/* =========================================================
+   RODAPÉ
+   ========================================================= */
+
+.painel-tv-footer {
+  min-height: 44px;
+  padding: 2px 4px 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+
+/* =========================================================
+   ANIMAÇÕES
+   ========================================================= */
+
+@keyframes entrada-chamada {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+/* =========================================================
+   TELAS MENORES
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .painel-tv {
+    padding: 24px;
+  }
+
+  .painel-tv-conteudo {
+    grid-template-columns: minmax(0, 1.55fr) minmax(310px, 0.8fr);
+  }
+
+  .card-chamada-conteudo {
+    padding: 36px !important;
+  }
+
+  .destino-chamada {
+    min-width: 85%;
+  }
+}
+
+
+@media (max-width: 850px) {
+  .painel-tv {
+    height: auto;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .painel-tv-header {
+    align-items: flex-start;
+  }
+
+  .painel-tv-conteudo {
+    grid-template-columns: 1fr;
+  }
+
+  .card-chamada-atual,
+  .card-ultimas-chamadas {
+    min-height: auto;
+  }
+
+  .card-chamada-atual {
+    min-height: 480px;
+  }
+
+  .card-ultimas-chamadas {
+    min-height: 420px;
+  }
+}
+
+
+@media (max-width: 600px) {
+  .painel-tv {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .painel-tv-header {
+    flex-direction: column;
+  }
+
+  .painel-tv-header > .MuiStack-root {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .painel-tv-relogio {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .card-chamada-conteudo {
+    padding: 28px 20px !important;
+    gap: 30px;
+  }
+
+  .nome-chamada-atual {
+    font-size: clamp(2.6rem, 13vw, 4.2rem) !important;
+  }
+
+  .destino-chamada {
+    width: 100%;
+    min-width: 0;
+    padding: 18px 20px;
+  }
+
+  .destino-chamada > svg {
+    font-size: 2rem;
+  }
+
+  .ultimas-chamadas-conteudo {
+    padding: 20px !important;
+  }
+
+  .ultimas-chamadas-header {
+    align-items: flex-start !important;
+  }
+
+  .item-ultima-chamada-topo {
+    flex-direction: column;
+  }
+
+  .painel-tv-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+
+/* =========================================================
+   ACESSIBILIDADE
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .card-chamada-atual {
+    animation: none;
+  }
+
+  .botao-som,
+  .item-ultima-chamada {
+    transition: none !important;
+  }
 }

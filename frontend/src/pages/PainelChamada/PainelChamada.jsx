@@ -1,162 +1,460 @@
 import { useEffect, useRef, useState } from "react";
 
-import { listarChamadaPublica } from "../../services/atendimentoService";
+import {
+  Alert,
+  Box,
+  Card,
+  CardContent,
+  Chip,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+
+import AccessTimeOutlinedIcon
+  from "@mui/icons-material/AccessTimeOutlined";
+
+import CampaignOutlinedIcon
+  from "@mui/icons-material/CampaignOutlined";
+
+import HistoryOutlinedIcon
+  from "@mui/icons-material/HistoryOutlined";
+
+import MeetingRoomOutlinedIcon
+  from "@mui/icons-material/MeetingRoomOutlined";
+
+import VolumeOffOutlinedIcon
+  from "@mui/icons-material/VolumeOffOutlined";
+
+import VolumeUpOutlinedIcon
+  from "@mui/icons-material/VolumeUpOutlined";
+
+import { listarChamadaPublica }
+  from "../../services/atendimentoService";
 
 import "./PainelChamada.css";
 
+
 const INTERVALO_ATUALIZACAO_MS = 4000;
 
-const ROTULO_STATUS = {
-    CONVOCADO: "Dirija-se à sala",
-    EM_ATENDIMENTO: "Em atendimento",
-};
 
-function formatarHora(data) {
-    return data.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-    });
+function formatarHorario(data) {
+  if (!data) {
+    return "--:--";
+  }
+
+  return new Date(data).toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
+
+
+function formatarRelogio(data) {
+  return data.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+
+function formatarData(data) {
+  return data.toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+  });
+}
+
+
+function obterDestino(chamada) {
+  if (chamada?.numero_sala) {
+    return chamada.numero_sala;
+  }
+
+  if (chamada?.setor) {
+    return chamada.setor;
+  }
+
+  return "Atendimento";
+}
+
 
 function anunciarPorVoz(chamada) {
-    if (!("speechSynthesis" in window)) return;
+  if (!("speechSynthesis" in window)) {
+    return;
+  }
 
-    const partes = [chamada.nome];
+  const destino = obterDestino(chamada);
 
-    if (chamada.numero_senha) {
-        partes.push(`senha ${chamada.numero_senha}`);
-    }
+  const texto = `${chamada.nome}, dirija-se a ${destino}.`;
 
-    if (chamada.numero_sala) {
-        partes.push(`dirija-se à ${chamada.numero_sala}`);
-    } else if (chamada.setor) {
-        partes.push(`dirija-se ao setor ${chamada.setor}`);
-    }
+  const locucao = new SpeechSynthesisUtterance(texto);
 
-    const texto = partes.join(", ");
+  locucao.lang = "pt-BR";
+  locucao.rate = 0.9;
+  locucao.pitch = 1;
+  locucao.volume = 1;
 
-    const locucao = new SpeechSynthesisUtterance(texto);
-    locucao.lang = "pt-BR";
-    locucao.rate = 0.95;
-
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(locucao);
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(locucao);
 }
 
-function PainelChamada() {
-    const [chamadas, setChamadas] = useState([]);
-    const [relogio, setRelogio] = useState(new Date());
-    const [erro, setErro] = useState("");
-    const [somAtivo, setSomAtivo] = useState(true);
 
-    const ultimoIdAnunciadoRef = useRef(null);
+export default function PainelChamada() {
+  const [chamadas, setChamadas] = useState([]);
+  const [relogio, setRelogio] = useState(new Date());
+  const [erro, setErro] = useState("");
+  const [somAtivo, setSomAtivo] = useState(true);
 
-    useEffect(() => {
-        async function carregar() {
-            try {
-                const dados = await listarChamadaPublica();
-                setChamadas(dados);
-                setErro("");
+  const ultimoIdAnunciadoRef = useRef(null);
 
-                const [chamadaAtual] = dados;
 
-                // Só anuncia por voz quando o item no topo (a chamada
-                // mais recente) muda — evita repetir o mesmo anúncio a
-                // cada atualização automática da tela.
-                if (
-                    somAtivo &&
-                    chamadaAtual &&
-                    chamadaAtual.id !== ultimoIdAnunciadoRef.current
-                ) {
-                    anunciarPorVoz(chamadaAtual);
-                    ultimoIdAnunciadoRef.current = chamadaAtual.id;
-                }
-            } catch (e) {
-                setErro(e.message);
-            }
+  useEffect(() => {
+    async function carregarChamadas() {
+      try {
+        const dados = await listarChamadaPublica();
+
+        const listaRecebida = Array.isArray(dados)
+          ? dados
+          : [];
+
+        setChamadas(listaRecebida);
+        setErro("");
+
+        const chamadaAtual = listaRecebida[0];
+
+        if (
+          somAtivo &&
+          chamadaAtual &&
+          chamadaAtual.id !== ultimoIdAnunciadoRef.current
+        ) {
+          anunciarPorVoz(chamadaAtual);
+
+          ultimoIdAnunciadoRef.current =
+            chamadaAtual.id;
         }
+      } catch (error) {
+        console.error(
+          "Erro ao carregar o painel de chamadas:",
+          error
+        );
 
-        carregar();
-        const intervalo = setInterval(carregar, INTERVALO_ATUALIZACAO_MS);
-        return () => clearInterval(intervalo);
-    }, [somAtivo]);
+        setErro(
+          error?.message ||
+          "Não foi possível atualizar o painel."
+        );
+      }
+    }
 
-    useEffect(() => {
-        const intervaloRelogio = setInterval(() => setRelogio(new Date()), 1000);
-        return () => clearInterval(intervaloRelogio);
-    }, []);
+    carregarChamadas();
 
-    const [atual, ...anteriores] = chamadas;
-
-    return (
-        <div className="painel-chamada">
-            <div className="painel-chamada-header">
-                <h1>Painel de Chamada — Sala de Espera</h1>
-                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                    <button
-                        type="button"
-                        onClick={() => setSomAtivo((atual) => !atual)}
-                        style={{
-                            background: "transparent",
-                            border: "1px solid currentColor",
-                            borderRadius: 8,
-                            color: "inherit",
-                            cursor: "pointer",
-                            padding: "6px 12px",
-                            fontSize: 14,
-                        }}
-                    >
-                        {somAtivo ? "🔊 Som ativado" : "🔇 Som desativado"}
-                    </button>
-                    <span className="relogio">{formatarHora(relogio)}</span>
-                </div>
-            </div>
-
-            {erro && <p style={{ color: "#f87171" }}>{erro}</p>}
-
-            {atual ? (
-                <div className="chamada-atual">
-                    <div className="rotulo">
-                        {ROTULO_STATUS[atual.status] || "Chamando"}
-                    </div>
-                    <div className="nome">{atual.nome}</div>
-                    {atual.numero_senha && (
-                        <div className="guiche">Senha: {atual.numero_senha}</div>
-                    )}
-                    {(atual.numero_sala || atual.setor) && (
-                        <div className="guiche">
-                            {atual.numero_sala || atual.setor}
-                        </div>
-                    )}
-                </div>
-            ) : (
-                <div className="chamada-vazia">
-                    Nenhuma chamada no momento.
-                </div>
-            )}
-
-            {anteriores.length > 0 && (
-                <div className="lista-anteriores">
-                    <h2>Chamadas anteriores</h2>
-                    {anteriores.map((item) => (
-                        <div key={item.id} className="linha-anterior">
-                            <span>
-                                {item.numero_senha
-                                    ? `${item.numero_senha} — ${item.nome}`
-                                    : item.nome}
-                            </span>
-                            <span className="guiche-tag">
-                                {item.numero_sala
-                                    ? item.numero_sala
-                                    : ROTULO_STATUS[item.status]}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
+    const intervalo = setInterval(
+      carregarChamadas,
+      INTERVALO_ATUALIZACAO_MS
     );
-}
 
-export default PainelChamada;
+    return () => clearInterval(intervalo);
+  }, [somAtivo]);
+
+
+  useEffect(() => {
+    const intervalo = setInterval(() => {
+      setRelogio(new Date());
+    }, 1000);
+
+    return () => clearInterval(intervalo);
+  }, []);
+
+
+  const [chamadaAtual, ...chamadasAnteriores] =
+    chamadas;
+
+
+  return (
+    <Box className="painel-tv">
+      <Box component="header" className="painel-tv-header">
+        <Box>
+          <Typography
+            variant="h4"
+            fontWeight={800}
+            className="painel-tv-titulo"
+          >
+            Painel de Atendimento
+          </Typography>
+
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            textTransform="capitalize"
+          >
+            {formatarData(relogio)}
+          </Typography>
+        </Box>
+
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={2}
+        >
+          <Tooltip
+            title={
+              somAtivo
+                ? "Desativar som"
+                : "Ativar som"
+            }
+          >
+            <IconButton
+              type="button"
+              onClick={() => {
+                setSomAtivo((estadoAtual) =>
+                  !estadoAtual
+                );
+              }}
+              className="botao-som"
+              aria-label={
+                somAtivo
+                  ? "Desativar som"
+                  : "Ativar som"
+              }
+            >
+              {somAtivo
+                ? <VolumeUpOutlinedIcon />
+                : <VolumeOffOutlinedIcon />}
+            </IconButton>
+          </Tooltip>
+
+          <Box className="painel-tv-relogio">
+            <AccessTimeOutlinedIcon />
+
+            <Typography
+              component="span"
+              fontWeight={800}
+            >
+              {formatarRelogio(relogio)}
+            </Typography>
+          </Box>
+        </Stack>
+      </Box>
+
+      {erro && (
+        <Alert
+          severity="error"
+          onClose={() => setErro("")}
+        >
+          {erro}
+        </Alert>
+      )}
+
+      <Box component="main" className="painel-tv-conteudo">
+        <Card
+          className="card-chamada-atual"
+          elevation={0}
+          key={chamadaAtual?.id || "sem-chamada"}
+        >
+          <CardContent className="card-chamada-conteudo">
+            {chamadaAtual ? (
+              <>
+                <Chip
+                  icon={<CampaignOutlinedIcon />}
+                  label="Chamando agora"
+                  className="chip-chamando"
+                />
+
+                <Typography
+                  component="p"
+                  className="nome-chamada-atual"
+                >
+                  {chamadaAtual.nome}
+                </Typography>
+
+                <Box className="destino-chamada">
+                  <MeetingRoomOutlinedIcon />
+
+                  <Box>
+                    <Typography
+                      variant="body1"
+                      className="destino-instrucao"
+                    >
+                      Dirija-se a
+                    </Typography>
+
+                    <Typography
+                      component="p"
+                      className="destino-nome"
+                    >
+                      {obterDestino(chamadaAtual)}
+                    </Typography>
+                  </Box>
+                </Box>
+              </>
+            ) : (
+              <Box className="painel-sem-chamada">
+                <CampaignOutlinedIcon />
+
+                <Typography
+                  variant="h4"
+                  fontWeight={800}
+                >
+                  Nenhuma chamada no momento
+                </Typography>
+
+                <Typography color="text.secondary">
+                  Aguarde enquanto os atendimentos são
+                  organizados.
+                </Typography>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card
+          className="card-ultimas-chamadas"
+          elevation={0}
+        >
+          <CardContent className="ultimas-chamadas-conteudo">
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              spacing={2}
+              className="ultimas-chamadas-header"
+            >
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1}
+              >
+                <HistoryOutlinedIcon color="action" />
+
+                <Typography
+                  variant="h5"
+                  fontWeight={800}
+                >
+                  Últimas chamadas
+                </Typography>
+              </Stack>
+
+              <Chip
+                size="small"
+                label={chamadasAnteriores.length}
+              />
+            </Stack>
+
+            {chamadasAnteriores.length > 0 ? (
+              <Stack
+                spacing={1.5}
+                className="lista-ultimas-chamadas"
+              >
+                {chamadasAnteriores.map(
+                  (chamada, indice) => (
+                    <Box
+                      key={chamada.id}
+                      className="item-ultima-chamada"
+                    >
+                      <Box className="item-ultima-chamada-topo">
+                        <Typography
+                          component="p"
+                          className="nome-ultima-chamada"
+                        >
+                          {chamada.nome}
+                        </Typography>
+
+                        {indice === 0 && (
+                          <Chip
+                            label="Mais recente"
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
+
+                      <Stack
+                        direction="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        spacing={2}
+                        mt={1}
+                      >
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          spacing={0.75}
+                        >
+                          <MeetingRoomOutlinedIcon
+                            fontSize="small"
+                            color="action"
+                          />
+
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            fontWeight={600}
+                          >
+                            {obterDestino(chamada)}
+                          </Typography>
+                        </Stack>
+
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          spacing={0.5}
+                        >
+                          <AccessTimeOutlinedIcon
+                            fontSize="small"
+                            color="action"
+                          />
+
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                          >
+                            {formatarHorario(
+                              chamada.chamado_em
+                            )}
+                          </Typography>
+                        </Stack>
+                      </Stack>
+                    </Box>
+                  )
+                )}
+              </Stack>
+            ) : (
+              <Box className="ultimas-chamadas-vazia">
+                <HistoryOutlinedIcon />
+
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  textAlign="center"
+                >
+                  As últimas pessoas chamadas aparecerão
+                  aqui.
+                </Typography>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+      </Box>
+
+      <Box component="footer" className="painel-tv-footer">
+        <Typography
+          variant="body1"
+          color="text.secondary"
+        >
+          Aguarde seu nome aparecer no painel e siga para
+          a sala indicada.
+        </Typography>
+
+        <Chip
+          size="small"
+          variant="outlined"
+          label="Atualização automática"
+        />
+      </Box>
+    </Box>
+  );
+}
