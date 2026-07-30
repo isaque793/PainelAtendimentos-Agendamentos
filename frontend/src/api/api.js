@@ -1,7 +1,7 @@
 // Configurável via .env do frontend (VITE_API_URL) — em desenvolvimento
 // local cai em localhost:8000; em produção/Codespaces, defina VITE_API_URL
 // apontando para o endereço público do backend.
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 function obterTokenAtual() {
   try {

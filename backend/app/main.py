@@ -11,6 +11,11 @@ from app.models.setor import Setor
 from app.routers import atendimento_router, cidadao_router
 from app.routers.setor_router import router as setor_router
 
+from pathlib import Path
+
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
 
 Base.metadata.create_all(bind=engine)
 
@@ -129,6 +134,32 @@ app.add_middleware(RateLimitMiddleware)
 app.include_router(cidadao_router.router)
 app.include_router(atendimento_router.router)
 app.include_router(setor_router)
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
+
+if FRONTEND_DIST.exists():
+    assets_dir = FRONTEND_DIST / "assets"
+
+    if assets_dir.exists():
+        app.mount(
+            "/assets",
+            StaticFiles(directory=assets_dir),
+            name="frontend-assets",
+        )
+
+    @app.get("/{caminho_completo:path}", include_in_schema=False)
+    async def servir_frontend(caminho_completo: str):
+        arquivo_solicitado = FRONTEND_DIST / caminho_completo
+
+        if (
+            caminho_completo
+            and arquivo_solicitado.exists()
+            and arquivo_solicitado.is_file()
+        ):
+            return FileResponse(arquivo_solicitado)
+
+        return FileResponse(FRONTEND_DIST / "index.html")
 
 
 @app.get("/")
