@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from app.core.auth import ServidorAutenticado
-from app.models.atendimento import Atendimento, StatusAtendimento
 from app.repositories.atendimento_repository import AtendimentoRepository
 from app.repositories.auditoria_repository import AuditoriaRepository
 from app.repositories.cidadao_repository import CidadaoRepository
@@ -12,7 +11,14 @@ from app.schemas.atendimento import (
     AtendimentoCreate,
     AtendimentoFinalizar,
     AtendimentoIniciar,
+    AtendimentoEncaminhar,
 )
+from app.models.atendimento import (
+    Atendimento,
+    StatusAtendimento,
+    TipoFinalizacao,
+)
+
 
 
 class AtendimentoService:
@@ -77,6 +83,8 @@ class AtendimentoService:
             raise ValueError(
                 "Este atendimento pertence a outro setor."
             )
+
+    
 
     def criar(
         self,
@@ -358,7 +366,11 @@ class AtendimentoService:
         self._verificar_mesmo_setor(atendimento, servidor)
 
         atendimento.status = (
-            StatusAtendimento.FINALIZADO.value
+    StatusAtendimento.FINALIZADO.value
+)
+
+        atendimento.tipo_finalizacao = (
+            TipoFinalizacao.CONCLUIDO.value
         )
 
         atendimento.data_finalizacao = (
@@ -410,3 +422,81 @@ class AtendimentoService:
         self._registrar_log(atendimento, "CANCELAR", servidor)
 
         return atendimento
+        def encaminhar(
+        self,
+        atendimento_id: int,
+        dados: AtendimentoEncaminhar,
+        servidor: ServidorAutenticado,
+    ) -> Atendimento:
+            atendimento = self.buscar_por_id(atendimento_id)
+
+            if atendimento.status != StatusAtendimento.EM_ATENDIMENTO.value:
+                raise ValueError(
+                    "Somente atendimentos em andamento podem ser encaminhados."
+                )
+
+            self._verificar_mesmo_setor(atendimento, servidor)
+
+            if atendimento.setor_id == dados.setor_destino_id:
+                raise ValueError(
+                    "Não é possível encaminhar o atendimento para o mesmo setor."
+                )
+
+            setor_destino = self._buscar_setor_ativo(
+                dados.setor_destino_id
+            )
+
+            if atendimento.atendimento_encaminhado:
+                raise ValueError(
+                    "Este atendimento já foi encaminhado."
+                )
+
+            agora = datetime.now()
+
+            atendimento.status = StatusAtendimento.FINALIZADO.value
+            atendimento.tipo_finalizacao = TipoFinalizacao.ENCAMINHADO.value
+            atendimento.data_finalizacao = agora
+            atendimento.resultado = (
+                f"Encaminhado para {setor_destino.nome}"
+            )
+            atendimento.observacoes = dados.motivo
+
+            atendimento = self.repository.salvar(
+                atendimento
+            )
+
+            numero_do_dia = (
+                self.repository.contar_hoje_por_setor(
+                    setor_destino.id
+                ) + 1
+            )
+
+            numero_senha = (
+                f"{setor_destino.sigla}-{numero_do_dia:03d}"
+            )
+
+            novo_atendimento = Atendimento(
+                cidadao_id=atendimento.cidadao_id,
+                setor_id=setor_destino.id,
+                numero_senha=numero_senha,
+                assunto=atendimento.assunto,
+                descricao=(
+                    f"Encaminhado do setor {atendimento.setor.nome}. "
+                    f"Motivo: {dados.motivo}"
+                ),
+                prioridade=atendimento.prioridade,
+                status=StatusAtendimento.AGUARDANDO.value,
+                atendimento_origem_id=atendimento.id,
+            )
+
+            novo_atendimento = self.repository.criar(
+                novo_atendimento
+            )
+
+            self._registrar_log(
+                atendimento,
+                f"ENCAMINHAR:{setor_destino.id}",
+                servidor,
+            )
+
+            return novo_atendimento

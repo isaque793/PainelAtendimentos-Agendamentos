@@ -19,9 +19,20 @@ class PrioridadeAtendimento(str, Enum):
     NORMAL = "NORMAL"
     PRIORITARIO = "PRIORITARIO"
 
+class TipoFinalizacao(str, Enum):
+    CONCLUIDO = "CONCLUIDO"
+    ENCAMINHADO = "ENCAMINHADO"
+
 
 class Atendimento(BaseModel):
     __tablename__ = "atendimentos"
+
+    atendimento_origem_id: Mapped[int | None] = mapped_column(
+    ForeignKey("atendimentos.id"),
+    nullable=True,
+    unique=True,
+    index=True,
+    )
 
     cidadao_id: Mapped[int] = mapped_column(
         ForeignKey("cidadaos.id"),
@@ -73,6 +84,11 @@ class Atendimento(BaseModel):
         index=True,
     )
 
+    tipo_finalizacao: Mapped[str | None] = mapped_column(
+    String(30),
+    nullable=True,
+    )
+
     data_solicitacao: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
@@ -119,5 +135,19 @@ class Atendimento(BaseModel):
         "Setor",
         back_populates="atendimentos",
         lazy="joined",
+    )
+
+    atendimento_origem = relationship(
+    "Atendimento",
+    remote_side="Atendimento.id",
+    foreign_keys=[atendimento_origem_id],
+    back_populates="atendimento_encaminhado",
+)
+
+    atendimento_encaminhado = relationship(
+        "Atendimento",
+        foreign_keys="Atendimento.atendimento_origem_id",
+        back_populates="atendimento_origem",
+        uselist=False,
     )
 

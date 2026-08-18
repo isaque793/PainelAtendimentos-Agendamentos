@@ -83,6 +83,23 @@ export function finalizarAtendimento(
   );
 }
 
+export function encaminharAtendimento(
+  atendimentoId,
+  setorDestinoId,
+  motivo
+) {
+  return apiRequest(
+    `/atendimentos/${atendimentoId}/encaminhar`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        setor_destino_id: setorDestinoId,
+        motivo,
+      }),
+    }
+  );
+}
+
 export function cancelarAtendimento(
   atendimentoId,
   observacoes

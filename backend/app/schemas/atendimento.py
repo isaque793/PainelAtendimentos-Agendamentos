@@ -64,6 +64,8 @@ class AtendimentoResponse(BaseModel):
     setor_id: int
     setor: SetorResumo
 
+    atendimento_origem_id: int | None = None
+
     numero_senha: str | None
 
     assunto: str
@@ -114,6 +116,14 @@ class AtendimentoFinalizar(BaseModel):
         min_length=3,
     )
     observacoes: str | None = None
+
+class AtendimentoEncaminhar(BaseModel):
+    setor_destino_id: int
+
+    motivo: str = Field(
+        min_length=3,
+        max_length=500,
+    )
 
 
 class AtendimentoCancelar(BaseModel):

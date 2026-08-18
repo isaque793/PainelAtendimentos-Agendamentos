@@ -24,9 +24,11 @@ from app.schemas.atendimento import (
     AtendimentoConvocar,
     AtendimentoCreate,
     AtendimentoFinalizar,
+    AtendimentoEncaminhar,
     AtendimentoIniciar,
     AtendimentoResponse,
     ChamadaPublica,
+    
 )
 from app.schemas.auditoria import LogAuditoriaResponse
 
@@ -513,6 +515,33 @@ def cancelar_atendimento(
 
     try:
         return service.cancelar(
+            atendimento_id,
+            dados,
+            servidor,
+        )
+
+    except ValueError as erro:
+        raise HTTPException(
+            status_code=400,
+            detail=str(erro),
+        ) from erro
+
+@router.patch(
+    "/{atendimento_id}/encaminhar",
+    response_model=AtendimentoResponse,
+)
+def encaminhar_atendimento(
+    atendimento_id: int,
+    dados: AtendimentoEncaminhar,
+    servidor: ServidorAutenticado = Depends(
+        obter_servidor_autenticado
+    ),
+    db: Session = Depends(get_db),
+):
+    service = criar_service(db)
+
+    try:
+        return service.encaminhar(
             atendimento_id,
             dados,
             servidor,
