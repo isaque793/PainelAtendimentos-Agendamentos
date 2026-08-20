@@ -83,6 +83,8 @@ export function finalizarAtendimento(
   );
 }
 
+
+
 export function encaminharAtendimento(
   atendimentoId,
   setorDestinoId,

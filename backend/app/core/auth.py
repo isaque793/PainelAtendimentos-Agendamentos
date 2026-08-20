@@ -1,10 +1,12 @@
 import jwt
-from fastapi import Header, HTTPException
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
 from app.core.security import decodificar_token_acesso
 from app.models.perfil_setor import PerfilSetor
 
+security = HTTPBearer()
 
 class ServidorAutenticado(BaseModel):
     """Identidade do servidor extraída do token — nunca do corpo da
@@ -24,20 +26,10 @@ class ServidorAutenticado(BaseModel):
 
 
 def obter_servidor_autenticado(
-    authorization: str | None = Header(default=None),
+    credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> ServidorAutenticado:
-    """Dependência do FastAPI: exige um header
-    ``Authorization: Bearer <token>`` válido, emitido em
-    POST /setores/acesso. Usada em toda rota que altera o estado de um
-    atendimento (convocar, iniciar, finalizar, cancelar) ou que expõe
-    dados sensíveis (excluir cadastro, gerar relatório)."""
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=401,
-            detail="Token de acesso ausente. Faça login em /setores/acesso.",
-        )
 
-    token = authorization.removeprefix("Bearer ").strip()
+    token = credentials.credentials
 
     try:
         payload = decodificar_token_acesso(token)

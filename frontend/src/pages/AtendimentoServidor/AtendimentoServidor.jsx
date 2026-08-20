@@ -32,6 +32,9 @@ import CardFila
 import HistoricoAtendimentos
   from "../../components/atendimento/HistoricoAtendimentos";
 
+import { listarSetoresPublicos }
+  from "../../services/setorService";
+
 import {
   listarFilaAtendimentos,
   listarAtendimentosEmAndamento,
@@ -39,6 +42,7 @@ import {
   convocarAtendimento,
   iniciarAtendimento,
   finalizarAtendimento,
+  encaminharAtendimento,
 } from "../../services/atendimentoService";
 
 import { obterSessaoServidor } from "../../utils/sessao";
@@ -56,6 +60,7 @@ export default function AtendimentoServidor() {
   const [fila, setFila] = useState([]);
   const [atendimentoAtual, setAtendimentoAtual] =
     useState(null);
+  const [setores, setSetores] = useState([]);
   const [finalizados, setFinalizados] = useState([]);
   const [observacoes, setObservacoes] = useState("");
   const [carregando, setCarregando] = useState(true);
@@ -92,13 +97,16 @@ export default function AtendimentoServidor() {
           filaRecebida,
           emAtendimento,
           finalizadosRecebidos,
+          setoresRecebidos,
         ] = await Promise.all([
           listarFilaAtendimentos(setorId),
           listarAtendimentosEmAndamento(setorId),
           listarAtendimentosFinalizados(setorId),
+          listarSetoresPublicos(),
         ]);
 
         setFila(filaRecebida);
+        setSetores(setoresRecebidos);
 
         // Com mais de um servidor logado no mesmo setor, cada tela só
         // deve mostrar como "meu atendimento atual" o que o PRÓPRIO
@@ -204,40 +212,72 @@ export default function AtendimentoServidor() {
     }
   }
 
-  async function handleFinalizar(
-    atendimento,
-    textoObservacoes
-  ) {
-    try {
-      setCarregando(true);
-      setErro("");
+async function handleFinalizar(
+  atendimento,
+  textoObservacoes
+) {
+  try {
+    setCarregando(true);
+    setErro("");
 
-      await finalizarAtendimento(
-        atendimento.id,
-        "ATENDIMENTO_CONCLUIDO",
-        textoObservacoes
-      );
+    await finalizarAtendimento(
+      atendimento.id,
+      "ATENDIMENTO_CONCLUIDO",
+      textoObservacoes
+    );
 
-      setObservacoes("");
+    setObservacoes("");
 
-      await carregarPainel();
-    } catch (error) {
-      console.error(
-        "Erro ao finalizar atendimento:",
-        error
-      );
+    await carregarPainel();
+  } catch (error) {
+    console.error(
+      "Erro ao finalizar atendimento:",
+      error
+    );
 
-      setErro(
-        obterMensagemErro(error) ||
-          "Não foi possível finalizar o atendimento."
-      );
-    } finally {
-      setCarregando(false);
-    }
+    setErro(
+      obterMensagemErro(error) ||
+        "Não foi possível finalizar o atendimento."
+    );
+  } finally {
+    setCarregando(false);
   }
+}
 
-  
-    return (
+async function handleEncaminhar(
+  atendimento,
+  setorDestinoId,
+  motivo
+) {
+  try {
+    setCarregando(true);
+    setErro("");
+
+    await encaminharAtendimento(
+      atendimento.id,
+      setorDestinoId,
+      motivo
+    );
+
+    setObservacoes("");
+
+    await carregarPainel();
+  } catch (error) {
+    console.error(
+      "Erro ao encaminhar atendimento:",
+      error
+    );
+
+    setErro(
+      obterMensagemErro(error) ||
+        "Não foi possível encaminhar o atendimento."
+    );
+  } finally {
+    setCarregando(false);
+  }
+}
+
+return (
   <Box
     sx={{
       width: "100%",
@@ -253,14 +293,16 @@ export default function AtendimentoServidor() {
       },
     }}
   >
-    <Container
-  maxWidth={false}
-  disableGutters
-  sx={{
-    maxWidth: "1800px",
-    mx: "auto",
-  }}
->
+     <Container
+      maxWidth={false}
+      disableGutters
+      sx={{
+        maxWidth: "1800px",
+        mx: "auto",
+      }}
+    >
+
+
   <Stack spacing={3}>
     <HeaderInstitucional
       setorNome={acessoServidor?.setor_nome}
@@ -555,6 +597,9 @@ export default function AtendimentoServidor() {
                 aoAlterarObservacoes={setObservacoes}
                 aoIniciar={handleIniciar}
                 aoFinalizar={handleFinalizar}
+                aoEncaminhar={handleEncaminhar}
+                setores={setores}
+                setorAtualId={setorId}
                 carregando={carregando}
               />
             </Stack>

@@ -1,3 +1,5 @@
+import { useMemo, useState } from "react";
+
 import {
   Box,
   Button,
@@ -8,6 +10,14 @@ import {
   Stack,
   TextField,
   Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
 } from "@mui/material";
 
 import CheckCircleOutlinedIcon
@@ -38,8 +48,60 @@ export default function AtendimentoAtual({
   aoAlterarObservacoes,
   aoIniciar,
   aoFinalizar,
+  aoEncaminhar,
+  setores = [],
+  setorAtualId,
   carregando = false,
 }) {
+
+const [modalEncaminhamentoAberto, setModalEncaminhamentoAberto] =
+useState(false);
+
+const [setorDestinoId, setSetorDestinoId] =
+  useState("");
+
+const [motivoEncaminhamento, setMotivoEncaminhamento] =
+  useState("");
+
+const setoresDisponiveis = useMemo(
+  () =>
+    setores.filter(
+      (setor) =>
+        Number(setor.id) !== Number(setorAtualId)
+    ),
+  [setores, setorAtualId]
+);
+
+function abrirModalEncaminhamento() {
+  setSetorDestinoId("");
+  setMotivoEncaminhamento("");
+  setModalEncaminhamentoAberto(true);
+}
+
+function fecharModalEncaminhamento() {
+  setModalEncaminhamentoAberto(false);
+}
+
+async function confirmarEncaminhamento() {
+  if (!setorDestinoId) {
+    return;
+  }
+
+  if (motivoEncaminhamento.trim().length < 3) {
+    return;
+  }
+
+  await aoEncaminhar(
+    atendimento,
+    Number(setorDestinoId),
+    motivoEncaminhamento.trim()
+  );
+
+  setModalEncaminhamentoAberto(false);
+  setSetorDestinoId("");
+  setMotivoEncaminhamento("");
+}
+
   if (!atendimento) {
     return (
       <Card
@@ -153,6 +215,7 @@ export default function AtendimentoAtual({
 
 
   return (
+    <>
     <Card
       variant="outlined"
       sx={{
@@ -367,40 +430,157 @@ export default function AtendimentoAtual({
           )}
 
           {estaEmAtendimento && (
-            <Button
-              variant="contained"
-              color="success"
-              size="large"
-              startIcon={
-                <CheckCircleOutlinedIcon />
-              }
-              onClick={() =>
-                aoFinalizar(
-                  atendimento,
-                  observacoes
-                )
-              }
-              disabled={carregando}
-              fullWidth
-              sx={{
-                minHeight: 44,
-                borderRadius: "8px",
-                textTransform: "none",
-                fontWeight: 800,
-                boxShadow: "none",
-
-                "&:hover": {
-                  boxShadow: "none",
-                },
+            <Stack
+              direction={{
+                xs: "column",
+                sm: "row",
               }}
+              spacing={1.5}
             >
-              {carregando
-                ? "Finalizando..."
-                : "Finalizar atendimento"}
-            </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                size="large"
+                onClick={abrirModalEncaminhamento}
+                disabled={carregando}
+                fullWidth
+                sx={{
+                  minHeight: 44,
+                  borderRadius: "8px",
+                  textTransform: "none",
+                  fontWeight: 800,
+                }}
+              >
+                Encaminhar
+              </Button>
+
+              <Button
+                variant="contained"
+                color="success"
+                size="large"
+                startIcon={
+                  <CheckCircleOutlinedIcon />
+                }
+                onClick={() =>
+                  aoFinalizar(
+                    atendimento,
+                    observacoes
+                  )
+                }
+                disabled={carregando}
+                fullWidth
+                sx={{
+                  minHeight: 44,
+                  borderRadius: "8px",
+                  textTransform: "none",
+                  fontWeight: 800,
+                  boxShadow: "none",
+                  "&:hover": {
+                    boxShadow: "none",
+                  },
+                }}
+              >
+                {carregando
+                  ? "Finalizando..."
+                  : "Finalizar atendimento"}
+              </Button>
+            </Stack>
           )}
         </Stack>
       </CardContent>
-    </Card>
-  );
+       </Card>
+
+    <Dialog
+      open={modalEncaminhamentoAberto}
+      onClose={
+        carregando
+          ? undefined
+          : fecharModalEncaminhamento
+      }
+      fullWidth
+      maxWidth="sm"
+    >
+      <DialogTitle>
+        Encaminhar atendimento
+      </DialogTitle>
+
+      <DialogContent>
+        <Stack
+          spacing={2}
+          sx={{ mt: 1 }}
+        >
+          <FormControl fullWidth>
+            <InputLabel id="setor-destino-label">
+              Setor de destino
+            </InputLabel>
+
+            <Select
+              labelId="setor-destino-label"
+              value={setorDestinoId}
+              label="Setor de destino"
+              onChange={(evento) =>
+                setSetorDestinoId(
+                  evento.target.value
+                )
+              }
+              disabled={carregando}
+            >
+              {setoresDisponiveis.map(
+                (setor) => (
+                  <MenuItem
+                    key={setor.id}
+                    value={setor.id}
+                  >
+                    {setor.nome}
+                    {setor.sigla
+                      ? ` (${setor.sigla})`
+                      : ""}
+                  </MenuItem>
+                )
+              )}
+            </Select>
+          </FormControl>
+
+          <TextField
+            label="Motivo do encaminhamento"
+            placeholder="Informe por que este atendimento precisa seguir para outro setor..."
+            multiline
+            minRows={3}
+            fullWidth
+            value={motivoEncaminhamento}
+            onChange={(evento) =>
+              setMotivoEncaminhamento(
+                evento.target.value
+              )
+            }
+            disabled={carregando}
+          />
+        </Stack>
+      </DialogContent>
+
+      <DialogActions>
+        <Button
+          onClick={fecharModalEncaminhamento}
+          disabled={carregando}
+        >
+          Cancelar
+        </Button>
+
+        <Button
+          variant="contained"
+          onClick={confirmarEncaminhamento}
+          disabled={
+            carregando ||
+            !setorDestinoId ||
+            motivoEncaminhamento.trim().length < 3
+          }
+        >
+          {carregando
+            ? "Encaminhando..."
+            : "Encaminhar"}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  </>
+);
 }
