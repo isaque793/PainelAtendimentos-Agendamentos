@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 
 import AtendimentoPublico
-    from "./pages/AtendimentoPublico/AtendimentoPublico";
+    from "./pages/Atendimentopublico/AtendimentoPublico";
 
 import Dashboard from "./pages/Dashboard/Dashboard";
 
