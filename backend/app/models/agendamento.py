@@ -9,6 +9,7 @@ from app.database.base import BaseModel
 
 class StatusAgendamento(str, Enum):
     AGENDADO = "AGENDADO"
+    EM_ATENDIMENTO = "EM_ATENDIMENTO"
     CONCLUIDO = "CONCLUIDO"
     CANCELADO = "CANCELADO"
 
