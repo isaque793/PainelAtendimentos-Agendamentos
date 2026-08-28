@@ -7,6 +7,13 @@ export function criarAgendamento(dados) {
   });
 }
 
+export function iniciarAgendamento(agendamentoId) {
+  return apiRequest(`/agendamentos/${agendamentoId}/iniciar`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+}
+
 export function listarAgendamentosMensais(ano, mes, setorId) {
   const parametros = new URLSearchParams({
     ano: String(ano),

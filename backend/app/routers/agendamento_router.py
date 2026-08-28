@@ -6,12 +6,14 @@ from sqlalchemy.orm import Session
 
 from app.core.auth import ServidorAutenticado, obter_servidor_autenticado
 from app.database.connection import get_db
-from app.models.agendamento import Agendamento
+from app.models.agendamento import Agendamento, StatusAgendamento
+from app.models.atendimento import Atendimento, StatusAtendimento
 from app.models.cidadao import Cidadao
 from app.repositories.agendamento_repository import AgendamentoRepository
 from app.repositories.cidadao_repository import CidadaoRepository
 from app.repositories.setor_repository import SetorRepository
 from app.schemas.agendamento import AgendamentoCreate, AgendamentoResponse
+from app.schemas.atendimento import AtendimentoResponse
 from app.utils.formatacao import apenas_digitos
 
 
@@ -97,7 +99,7 @@ def listar_agendamentos_mensais(
     if mes < 1 or mes > 12:
         raise HTTPException(status_code=400, detail="Mês inválido.")
 
-    setor_efetivo = servidor.setor_id
+    setor_efetivo = None if servidor.eh_direcao else servidor.setor_id
     if servidor.eh_direcao and setor_id is not None:
         setor_efetivo = setor_id
 
@@ -112,6 +114,60 @@ def listar_agendamentos_mensais(
         fim,
         setor_efetivo,
     )
+
+
+@router.post(
+    "/{agendamento_id}/iniciar",
+    response_model=AtendimentoResponse,
+)
+def iniciar_agendamento(
+    agendamento_id: int,
+    servidor: ServidorAutenticado = Depends(obter_servidor_autenticado),
+    db: Session = Depends(get_db),
+):
+    agendamento = db.get(Agendamento, agendamento_id)
+    if agendamento is None or (
+        not servidor.eh_direcao
+        and agendamento.setor_id != servidor.setor_id
+    ):
+        raise HTTPException(status_code=404, detail="Agendamento não encontrado.")
+
+    if agendamento.status != StatusAgendamento.AGENDADO.value:
+        raise HTTPException(
+            status_code=409,
+            detail="Este agendamento não está disponível para início.",
+        )
+
+    atendimento_existente = db.query(Atendimento).filter(
+        Atendimento.agendamento_id == agendamento.id
+    ).first()
+    if atendimento_existente is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Este agendamento já foi convertido em atendimento.",
+        )
+
+    agora = datetime.now()
+    atendimento = Atendimento(
+        agendamento_id=agendamento.id,
+        cidadao_id=agendamento.cidadao_id,
+        setor_id=agendamento.setor_id,
+        assunto=agendamento.assunto,
+        descricao=agendamento.descricao,
+        prioridade="NORMAL",
+        status=StatusAtendimento.EM_ATENDIMENTO.value,
+        servidor_nome=servidor.servidor_nome,
+        servidor_masp=servidor.servidor_masp,
+        numero_sala=agendamento.setor.numero_sala,
+        data_solicitacao=agendamento.created_at,
+        data_convocacao=agora,
+        data_inicio=agora,
+    )
+    agendamento.status = StatusAgendamento.EM_ATENDIMENTO.value
+    db.add(atendimento)
+    db.commit()
+    db.refresh(atendimento)
+    return atendimento
 
 
 @router.get(

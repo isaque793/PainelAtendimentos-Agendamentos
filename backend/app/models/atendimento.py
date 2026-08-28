@@ -34,6 +34,13 @@ class Atendimento(BaseModel):
     index=True,
     )
 
+    agendamento_id: Mapped[int | None] = mapped_column(
+        ForeignKey("agendamentos.id"),
+        nullable=True,
+        unique=True,
+        index=True,
+    )
+
     cidadao_id: Mapped[int] = mapped_column(
         ForeignKey("cidadaos.id"),
         nullable=False,
