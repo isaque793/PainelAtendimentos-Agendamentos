@@ -14,6 +14,7 @@ from app.schemas.atendimento import (
     AtendimentoIniciar,
     AtendimentoEncaminhar,
 )
+from app.models.agendamento import Agendamento, StatusAgendamento
 from app.models.atendimento import (
     Atendimento,
     StatusAtendimento,
@@ -348,6 +349,24 @@ class AtendimentoService:
 
         return atendimento
 
+    def _sincronizar_agendamento(
+        self,
+        atendimento: Atendimento,
+        status: str,
+    ) -> None:
+        if not atendimento.agendamento_id:
+            return
+
+        agendamento = self.repository.db.get(
+            Agendamento,
+            atendimento.agendamento_id,
+        )
+        if agendamento is None:
+            return
+
+        agendamento.status = status
+        self.repository.db.commit()
+
     def finalizar(
         self,
         atendimento_id: int,
@@ -387,6 +406,10 @@ class AtendimentoService:
         atendimento = self.repository.salvar(
             atendimento
         )
+        self._sincronizar_agendamento(
+            atendimento,
+            StatusAgendamento.CONCLUIDO.value,
+        )
 
         self._registrar_log(atendimento, "FINALIZAR", servidor)
 
@@ -421,6 +444,10 @@ class AtendimentoService:
 
         atendimento = self.repository.salvar(
             atendimento
+        )
+        self._sincronizar_agendamento(
+            atendimento,
+            StatusAgendamento.CANCELADO.value,
         )
 
         self._registrar_log(atendimento, "CANCELAR", servidor)
