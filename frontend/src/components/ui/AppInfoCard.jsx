@@ -159,7 +159,9 @@ export default function AppInfoCard({
             fontWeight={900}
             color="text.primary"
             sx={{
+              flex: "1 1 0",
               minWidth: 0,
+              maxWidth: "100%",
               lineHeight: 1.3,
               overflowWrap: "anywhere",
               textTransform: "uppercase",
@@ -174,6 +176,7 @@ export default function AppInfoCard({
               size="small"
               variant="outlined"
               sx={{
+                flex: "0 0 auto",
                 flexShrink: 0,
                 minWidth: 0,
                 maxWidth: "100%",
@@ -210,9 +213,19 @@ export default function AppInfoCard({
               width: "100%",
               minWidth: 0,
               overflow: "visible",
+              rowGap: 1,
               "& > *": {
                 minWidth: 0,
                 maxWidth: "100%",
+                flex: "1 1 auto",
+              },
+              "& .tempo-espera-chip": {
+                flex: "0 0 100%",
+                width: "100%",
+                maxWidth: "100%",
+                minHeight: 24,
+                height: 24,
+                alignSelf: "stretch",
               },
             }}
           >

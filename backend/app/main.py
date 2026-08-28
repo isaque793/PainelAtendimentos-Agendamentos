@@ -8,7 +8,7 @@ from app.database.base import Base
 from app.database.connection import SessionLocal, engine
 from app.models.perfil_setor import PerfilSetor
 from app.models.setor import Setor
-from app.routers import atendimento_router, cidadao_router
+from app.routers import agendamento_router, atendimento_router, cidadao_router
 from app.routers.setor_router import router as setor_router
 
 from pathlib import Path
@@ -131,6 +131,7 @@ app.add_middleware(
 # minuto — protege contra abuso/spam nas rotas sem login.
 app.add_middleware(RateLimitMiddleware)
 
+app.include_router(agendamento_router.router)
 app.include_router(cidadao_router.router)
 app.include_router(atendimento_router.router)
 app.include_router(setor_router)

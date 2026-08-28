@@ -23,6 +23,9 @@ import PainelChamada from "./pages/PainelChamada/PainelChamada";
 
 import AcessoServidor from "./pages/AcessoServidor/AcessoServidor";
 
+import AgendamentosServidor
+    from "./pages/AgendamentosServidor/AgendamentosServidor";
+
 import RotaProtegida from "./components/RotaProtegida";
 
 
@@ -71,6 +74,17 @@ function App() {
                         <RotaProtegida>
                             <InternalLayout>
                                 <AtendimentoServidor />
+                            </InternalLayout>
+                        </RotaProtegida>
+                    }
+                />
+
+                <Route
+                    path="/direcao/agendamentos"
+                    element={
+                        <RotaProtegida>
+                            <InternalLayout>
+                                <AgendamentosServidor />
                             </InternalLayout>
                         </RotaProtegida>
                     }

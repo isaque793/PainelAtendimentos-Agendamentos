@@ -214,11 +214,13 @@ export default function CardFila({
             )}
             variant="outlined"
             sx={{
-              flex: "1 1 100%",
-              width: "100%",
+              flex: "0 0 100%",
+              flexBasis: "100%",
+              width: "auto",
               maxWidth: "100%",
+              boxSizing: "border-box",
               minHeight: 24,
-              height: "auto",
+              height: 24,
               justifyContent: "center",
               whiteSpace: "nowrap",
 
