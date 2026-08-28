@@ -9,6 +9,9 @@ import SupportAgentOutlinedIcon
 import AssessmentOutlinedIcon
     from "@mui/icons-material/AssessmentOutlined";
 
+import EventNoteOutlinedIcon
+    from "@mui/icons-material/EventNoteOutlined";
+
 import TvOutlinedIcon from "@mui/icons-material/TvOutlined";
 
 import OpenInNewOutlinedIcon
@@ -54,6 +57,11 @@ function Sidebar() {
                       icone: <SupportAgentOutlinedIcon fontSize="small" />,
                   },
               ]),
+        {
+            rota: "/direcao/agendamentos",
+            rotulo: "Agendamentos",
+            icone: <EventNoteOutlinedIcon fontSize="small" />,
+        },
         {
             rota: "/direcao/relatorios",
             rotulo: "Relatórios",
