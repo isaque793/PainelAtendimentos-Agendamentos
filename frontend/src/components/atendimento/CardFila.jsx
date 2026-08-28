@@ -207,13 +207,20 @@ export default function CardFila({
           </Stack>
 
           <Chip
+            className="tempo-espera-chip"
             size="small"
             label={calcularTempoEspera(
               atendimento?.data_solicitacao
             )}
             variant="outlined"
             sx={{
-              height: 24,
+              flex: "1 1 100%",
+              width: "100%",
+              maxWidth: "100%",
+              minHeight: 24,
+              height: "auto",
+              justifyContent: "center",
+              whiteSpace: "nowrap",
 
               color: prioritario
                 ? "#C75B00"
@@ -232,6 +239,9 @@ export default function CardFila({
 
               "& .MuiChip-label": {
                 px: 1,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
               },
             }}
           />

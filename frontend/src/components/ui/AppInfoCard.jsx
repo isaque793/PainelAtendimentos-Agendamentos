@@ -112,7 +112,7 @@ export default function AppInfoCard({
           ? "#BFDBFE"
           : "#E2E8F0",
 
-        borderRadius: "10px",
+        borderRadius: "7px",
         boxShadow: "none",
 
         cursor: interativo
@@ -146,7 +146,12 @@ export default function AppInfoCard({
           direction="row"
           alignItems="flex-start"
           justifyContent="space-between"
-          spacing={2}
+          flexWrap="wrap"
+          spacing={1.25}
+          sx={{
+            minWidth: 0,
+            rowGap: 0.75,
+          }}
         >
           <Typography
             component="p"
@@ -169,19 +174,25 @@ export default function AppInfoCard({
               size="small"
               variant="outlined"
               sx={{
-                flexShrink: 0,
+                flex: "0 1 auto",
+                minWidth: 0,
+                maxWidth: "100%",
                 minHeight: 26,
 
                 color: cores.texto,
                 backgroundColor: cores.fundo,
 
                 borderColor: cores.borda,
-                borderRadius: "6px",
+                borderRadius: "5px",
 
                 fontWeight: 800,
+                overflow: "hidden",
 
                 "& .MuiChip-label": {
                   px: 1.25,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                 },
               }}
             />
@@ -194,7 +205,16 @@ export default function AppInfoCard({
             alignItems="center"
             flexWrap="wrap"
             useFlexGap
-            spacing={1.5}
+            spacing={1.25}
+            sx={{
+              width: "100%",
+              minWidth: 0,
+              overflow: "visible",
+              "& > *": {
+                minWidth: 0,
+                maxWidth: "100%",
+              },
+            }}
           >
             {detalhes}
           </Stack>

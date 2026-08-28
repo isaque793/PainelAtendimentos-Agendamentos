@@ -367,7 +367,7 @@ return (
 
                     border: "1px solid",
                     borderColor: "divider",
-                    borderRadius: 4,
+                    borderRadius: 1.75,
 
                     boxShadow:
                       "0 10px 28px rgba(15, 23, 42, 0.05)",
@@ -398,7 +398,7 @@ return (
                       backgroundColor: "#EFF6FF",
 
                       border: "1px solid #DBEAFE",
-                      borderRadius: 2.5,
+                      borderRadius: 1.75,
                     }}
                   >
                     <GroupsOutlinedIcon fontSize="small" />
@@ -449,7 +449,7 @@ return (
 
                     border: "1px dashed",
                     borderColor: "divider",
-                    borderRadius: 3,
+                    borderRadius: 1.5,
                   }}
                 >
                   <Typography
@@ -508,7 +508,7 @@ return (
                   ? "warning.light"
                   : "divider",
 
-                borderRadius: 4,
+                borderRadius: 1.75,
 
                 boxShadow: atendimentoAtual
                   ? "0 14px 34px rgba(15, 23, 42, 0.065)"
@@ -544,7 +544,7 @@ return (
                       backgroundColor: "#FFF7ED",
 
                       border: "1px solid #FED7AA",
-                      borderRadius: 2.5,
+                      borderRadius: 1.75,
                     }}
                   >
                     <SupportAgentIcon fontSize="small" />
@@ -629,7 +629,7 @@ return (
 
                   border: "1px solid",
                   borderColor: "divider",
-                  borderRadius: 4,
+                  borderRadius: 1.75,
 
                   boxShadow:
                     "0 10px 28px rgba(15, 23, 42, 0.05)",
@@ -665,7 +665,7 @@ return (
                       backgroundColor: "#F0FDF4",
 
                       border: "1px solid #BBF7D0",
-                      borderRadius: 2.5,
+                      borderRadius: 1.75,
                     }}
                   >
                     <HistoryIcon fontSize="small" />
