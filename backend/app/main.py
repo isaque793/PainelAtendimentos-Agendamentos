@@ -121,7 +121,7 @@ app.add_middleware(
     # Libera também os domínios públicos do GitHub Codespaces
     # (ex.: https://algo-5173.app.github.dev), usados ao acessar o
     # frontend fora do localhost.
-    allow_origin_regex=r"https://.*\.app\.github\.dev",
+    allow_origin_regex=r"https://.*\.(app\.github\.dev|manus\.computer)",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
