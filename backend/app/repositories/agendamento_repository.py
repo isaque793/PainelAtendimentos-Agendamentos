@@ -4,6 +4,7 @@ from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
 from app.models.agendamento import Agendamento, StatusAgendamento
+from app.models.atendimento import Atendimento, StatusAtendimento
 
 
 class AgendamentoRepository:
@@ -47,7 +48,32 @@ class AgendamentoRepository:
             comando = comando.where(Agendamento.setor_id == setor_id)
 
         comando = comando.order_by(Agendamento.data_hora.asc())
-        return list(self.db.scalars(comando).all())
+        agendamentos = list(self.db.scalars(comando).all())
+
+        alterado = False
+        for agendamento in agendamentos:
+            if agendamento.status != StatusAgendamento.EM_ATENDIMENTO.value:
+                continue
+
+            atendimento = self.db.query(Atendimento).filter(
+                Atendimento.agendamento_id == agendamento.id
+            ).first()
+            if atendimento is None:
+                continue
+
+            if atendimento.status == StatusAtendimento.FINALIZADO.value:
+                agendamento.status = StatusAgendamento.CONCLUIDO.value
+                alterado = True
+            elif atendimento.status == StatusAtendimento.CANCELADO.value:
+                agendamento.status = StatusAgendamento.CANCELADO.value
+                alterado = True
+
+        if alterado:
+            self.db.commit()
+            for agendamento in agendamentos:
+                self.db.refresh(agendamento)
+
+        return agendamentos
 
     def buscar_por_protocolo(self, protocolo: str) -> Agendamento | None:
         return self.db.query(Agendamento).filter(

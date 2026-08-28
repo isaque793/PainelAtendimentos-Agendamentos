@@ -34,6 +34,15 @@ function nomeMes(mes) {
   return new Date(2024, mes - 1, 1).toLocaleDateString("pt-BR", { month: "long" });
 }
 
+function rotuloStatus(status) {
+  return {
+    AGENDADO: "Agendado",
+    EM_ATENDIMENTO: "Em atendimento",
+    CONCLUIDO: "Concluído",
+    CANCELADO: "Cancelado",
+  }[status] || status;
+}
+
 function mesmaData(valor, ano, mes, dia) {
   const data = new Date(valor);
   return data.getFullYear() === ano && data.getMonth() + 1 === mes && data.getDate() === dia;
@@ -151,7 +160,7 @@ export default function AgendamentosServidor() {
                             <Box key={agendamento.id} sx={{ p: 0.7, borderLeft: "3px solid #1268A7", borderTop: "1px solid #D4D9DE", borderRight: "1px solid #D4D9DE", borderBottom: "1px solid #D4D9DE", backgroundColor: "#F7FAFC", minWidth: 0 }}>
                               <Typography variant="caption" sx={{ display: "block", fontSize: "0.68rem", fontWeight: 900, color: "#153E67", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{formatarHora(agendamento.data_hora)} · {agendamento.cidadao.nome}</Typography>
                               <Typography variant="caption" sx={{ display: "block", mt: 0.15, fontSize: "0.65rem", color: "#5D6875", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{agendamento.assunto}</Typography>
-                              {agendamento.status === "AGENDADO" ? <Button fullWidth size="small" variant="outlined" startIcon={<PlayArrowOutlinedIcon sx={{ fontSize: "0.82rem !important" }} />} onClick={() => iniciar(agendamento)} disabled={iniciandoId === agendamento.id} sx={{ mt: 0.65, minWidth: 0, minHeight: 23, py: 0, px: 0.45, borderRadius: "3px", fontSize: "0.58rem", lineHeight: 1, whiteSpace: "nowrap" }}>{iniciandoId === agendamento.id ? "Abrindo" : "Iniciar atendimento"}</Button> : <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.6, fontSize: "0.6rem", fontWeight: 800 }}>{agendamento.status}</Typography>}
+                              {agendamento.status === "AGENDADO" ? <Button fullWidth size="small" variant="outlined" startIcon={<PlayArrowOutlinedIcon sx={{ fontSize: "0.82rem !important" }} />} onClick={() => iniciar(agendamento)} disabled={iniciandoId === agendamento.id} sx={{ mt: 0.65, minWidth: 0, minHeight: 23, py: 0, px: 0.45, borderRadius: "3px", fontSize: "0.58rem", lineHeight: 1, whiteSpace: "nowrap" }}>{iniciandoId === agendamento.id ? "Abrindo" : "Iniciar atendimento"}</Button> : <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.6, fontSize: "0.6rem", fontWeight: 800 }}>{rotuloStatus(agendamento.status)}</Typography>}
                             </Box>
                           ))}
                         </Stack>
