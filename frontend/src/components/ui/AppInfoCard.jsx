@@ -174,7 +174,7 @@ export default function AppInfoCard({
               size="small"
               variant="outlined"
               sx={{
-                flex: "0 1 auto",
+                flexShrink: 0,
                 minWidth: 0,
                 maxWidth: "100%",
                 minHeight: 26,

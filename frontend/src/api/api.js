@@ -12,11 +12,36 @@ function obterTokenAtual() {
   }
 }
 
+export async function apiDownload(endpoint) {
+  const token = obterTokenAtual();
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    headers: token
+      ? { Authorization: `Bearer ${token}` }
+      : {},
+  });
+
+  if (!response.ok) {
+    throw new Error("Não foi possível baixar o documento.");
+  }
+
+  return {
+    blob: await response.blob(),
+    nomeArquivo: response.headers
+      .get("Content-Disposition")
+      ?.split("filename*=UTF-8''")[1]
+      ?.replace(/"/g, "") || "documento",
+  };
+}
+
 export async function apiRequest(endpoint, options = {}) {
   const token = obterTokenAtual();
 
+  const enviandoFormData = options.body instanceof FormData;
+
   const headers = {
-    "Content-Type": "application/json",
+    ...(enviandoFormData
+      ? {}
+      : { "Content-Type": "application/json" }),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };

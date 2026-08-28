@@ -1,4 +1,4 @@
-import { apiRequest } from "../api/api";
+import { apiDownload, apiRequest } from "../api/api";
 
 
 export function cadastrarAtendimento(dados) {
@@ -88,17 +88,32 @@ export function finalizarAtendimento(
 export function encaminharAtendimento(
   atendimentoId,
   setorDestinoId,
-  motivo
+  motivo,
+  documentos = []
 ) {
+  const dados = new FormData();
+  dados.append("setor_destino_id", String(setorDestinoId));
+  dados.append("motivo", motivo);
+
+  for (const documento of documentos) {
+    dados.append("documentos", documento);
+  }
+
   return apiRequest(
     `/atendimentos/${atendimentoId}/encaminhar`,
     {
       method: "PATCH",
-      body: JSON.stringify({
-        setor_destino_id: setorDestinoId,
-        motivo,
-      }),
+      body: dados,
     }
+  );
+}
+
+export function baixarDocumentoAtendimento(
+  atendimentoId,
+  documentoId
+) {
+  return apiDownload(
+    `/atendimentos/${atendimentoId}/documentos/${documentoId}`
   );
 }
 

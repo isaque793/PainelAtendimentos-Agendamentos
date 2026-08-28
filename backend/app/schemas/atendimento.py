@@ -56,6 +56,18 @@ class AtendimentoCreate(BaseModel):
     )
 
 
+class DocumentoAtendimentoResponse(BaseModel):
+    id: int
+    nome_arquivo: str
+    tipo_conteudo: str
+    tamanho_bytes: int
+    enviado_por_nome: str
+    enviado_por_masp: str
+    criado_em: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class AtendimentoResponse(BaseModel):
     id: int
     cidadao_id: int
@@ -84,6 +96,7 @@ class AtendimentoResponse(BaseModel):
 
     observacoes: str | None
     resultado: str | None
+    documentos: list[DocumentoAtendimentoResponse] = []
 
     model_config = ConfigDict(
         from_attributes=True

@@ -151,3 +151,10 @@ class Atendimento(BaseModel):
         uselist=False,
     )
 
+    documentos = relationship(
+        "DocumentoAtendimento",
+        back_populates="atendimento",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+

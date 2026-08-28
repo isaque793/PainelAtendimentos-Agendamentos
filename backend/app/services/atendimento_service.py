@@ -4,6 +4,7 @@ from app.core.auth import ServidorAutenticado
 from app.repositories.atendimento_repository import AtendimentoRepository
 from app.repositories.auditoria_repository import AuditoriaRepository
 from app.repositories.cidadao_repository import CidadaoRepository
+from app.repositories.documento_repository import DocumentoRepository
 from app.repositories.setor_repository import SetorRepository
 from app.schemas.atendimento import (
     AtendimentoCancelar,
@@ -18,6 +19,7 @@ from app.models.atendimento import (
     StatusAtendimento,
     TipoFinalizacao,
 )
+from app.models.documento_atendimento import DocumentoAtendimento
 
 
 
@@ -29,11 +31,13 @@ class AtendimentoService:
         cidadao_repository: CidadaoRepository,
         setor_repository: SetorRepository,
         auditoria_repository: AuditoriaRepository | None = None,
+        documento_repository: DocumentoRepository | None = None,
     ):
         self.repository = repository
         self.cidadao_repository = cidadao_repository
         self.setor_repository = setor_repository
         self.auditoria_repository = auditoria_repository
+        self.documento_repository = documento_repository
 
     def _buscar_setor_ativo(
         self,
@@ -429,6 +433,7 @@ class AtendimentoService:
     atendimento_id: int,
     dados: AtendimentoEncaminhar,
     servidor: ServidorAutenticado,
+    documentos: list[dict] | None = None,
 ) -> Atendimento:
         atendimento = self.buscar_por_id(atendimento_id)
 
@@ -495,10 +500,48 @@ class AtendimentoService:
             novo_atendimento
         )
 
+        documentos_recebidos = list(documentos or [])
+
+        # Propaga anexos já existentes e adiciona os novos enviados no modal.
+        # O destino recebe cópias próprias, preservando a trilha de origem.
+        if self.documento_repository is not None:
+            documentos_para_destino = []
+
+            for documento_origem in atendimento.documentos:
+                documentos_para_destino.append(
+                    {
+                        "nome_arquivo": documento_origem.nome_arquivo,
+                        "tipo_conteudo": documento_origem.tipo_conteudo,
+                        "conteudo": documento_origem.conteudo,
+                        "enviado_por_nome": documento_origem.enviado_por_nome,
+                        "enviado_por_masp": documento_origem.enviado_por_masp,
+                        "documento_origem_id": documento_origem.id,
+                    }
+                )
+
+            documentos_para_destino.extend(documentos_recebidos)
+
+            for dados_documento in documentos_para_destino:
+                self.documento_repository.criar(
+                    DocumentoAtendimento(
+                        atendimento_id=novo_atendimento.id,
+                        documento_origem_id=dados_documento.get(
+                            "documento_origem_id"
+                        ),
+                        nome_arquivo=dados_documento["nome_arquivo"],
+                        tipo_conteudo=dados_documento["tipo_conteudo"],
+                        tamanho_bytes=len(dados_documento["conteudo"]),
+                        conteudo=dados_documento["conteudo"],
+                        enviado_por_nome=dados_documento["enviado_por_nome"],
+                        enviado_por_masp=dados_documento["enviado_por_masp"],
+                    )
+                )
+
+        quantidade_documentos = len(documentos_recebidos)
         self._registrar_log(
             atendimento,
-            f"ENCAMINHAR:{setor_destino.id}",
+            f"ENCAMINHAR:{setor_destino.id}:DOCS:{quantidade_documentos}",
             servidor,
         )
 
-        return novo_atendimento
+        return self.repository.buscar_por_id(novo_atendimento.id)

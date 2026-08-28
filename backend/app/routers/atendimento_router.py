@@ -1,15 +1,18 @@
 from datetime import datetime
+from pathlib import Path
 from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import Response
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 
 from app.core.auth import ServidorAutenticado, obter_servidor_autenticado
+from app.models.atendimento import Atendimento
 from app.database.connection import get_db
 from app.repositories.atendimento_repository import AtendimentoRepository
 from app.repositories.auditoria_repository import AuditoriaRepository
 from app.repositories.cidadao_repository import CidadaoRepository
+from app.repositories.documento_repository import DocumentoRepository
 from app.repositories.setor_repository import SetorRepository
 from app.services.atendimento_service import AtendimentoService
 from app.services.relatorio_service import (
@@ -47,6 +50,7 @@ def criar_service(
         cidadao_repository=CidadaoRepository(db),
         setor_repository=SetorRepository(db),
         auditoria_repository=AuditoriaRepository(db),
+        documento_repository=DocumentoRepository(db),
     )
 
 
@@ -390,6 +394,55 @@ def listar_finalizados(
 
 
 @router.get(
+    "/{atendimento_id}/documentos/{documento_id}",
+)
+def baixar_documento(
+    atendimento_id: int,
+    documento_id: int,
+    servidor: ServidorAutenticado = Depends(obter_servidor_autenticado),
+    db: Session = Depends(get_db),
+):
+    documento_repository = DocumentoRepository(db)
+    documento = documento_repository.buscar_por_id(documento_id)
+
+    if documento is None or documento.atendimento_id != atendimento_id:
+        raise HTTPException(
+            status_code=404,
+            detail="Documento não encontrado.",
+        )
+
+    atendimento = db.get(Atendimento, atendimento_id)
+
+    if atendimento is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Atendimento não encontrado.",
+        )
+
+    if (
+        not servidor.eh_direcao
+        and atendimento.setor_id != servidor.setor_id
+    ):
+        raise HTTPException(
+            status_code=404,
+            detail="Documento não encontrado.",
+        )
+
+    nome_arquivo = quote(documento.nome_arquivo)
+
+    return Response(
+        content=documento.conteudo,
+        media_type=documento.tipo_conteudo,
+        headers={
+            "Content-Disposition": (
+                f"attachment; filename*=UTF-8''{nome_arquivo}"
+            ),
+            "Access-Control-Expose-Headers": "Content-Disposition",
+        },
+    )
+
+
+@router.get(
     "/{atendimento_id}",
     response_model=AtendimentoResponse,
 )
@@ -530,9 +583,11 @@ def cancelar_atendimento(
     "/{atendimento_id}/encaminhar",
     response_model=AtendimentoResponse,
 )
-def encaminhar_atendimento(
+async def encaminhar_atendimento(
     atendimento_id: int,
-    dados: AtendimentoEncaminhar,
+    setor_destino_id: int = Form(...),
+    motivo: str = Form(...),
+    documentos: list[UploadFile] = File(default=[]),
     servidor: ServidorAutenticado = Depends(
         obter_servidor_autenticado
     ),
@@ -540,11 +595,48 @@ def encaminhar_atendimento(
 ):
     service = criar_service(db)
 
+    if len(documentos) > 5:
+        raise HTTPException(
+            status_code=400,
+            detail="É permitido anexar no máximo 5 documentos.",
+        )
+
+    documentos_recebidos = []
+    limite_bytes = 10 * 1024 * 1024
+
+    for documento in documentos:
+        conteudo = await documento.read()
+
+        if len(conteudo) > limite_bytes:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"O documento {documento.filename} excede o limite de 10 MB."
+                ),
+            )
+
+        nome_arquivo = Path(documento.filename or "documento").name
+        documentos_recebidos.append(
+            {
+                "nome_arquivo": nome_arquivo[:255],
+                "tipo_conteudo": documento.content_type or "application/octet-stream",
+                "conteudo": conteudo,
+                "enviado_por_nome": servidor.servidor_nome,
+                "enviado_por_masp": servidor.servidor_masp,
+            }
+        )
+
+    dados = AtendimentoEncaminhar(
+        setor_destino_id=setor_destino_id,
+        motivo=motivo,
+    )
+
     try:
         return service.encaminhar(
             atendimento_id,
             dados,
             servidor,
+            documentos_recebidos,
         )
 
     except ValueError as erro:

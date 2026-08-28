@@ -10,7 +10,7 @@ class SetorBase(BaseModel):
     )
 
     sigla: str = Field(
-        min_length=2,
+        min_length=1,
         max_length=20,
     )
 
@@ -38,7 +38,7 @@ class SetorUpdate(BaseModel):
 
     sigla: str | None = Field(
         default=None,
-        min_length=2,
+        min_length=1,
         max_length=20,
     )
 

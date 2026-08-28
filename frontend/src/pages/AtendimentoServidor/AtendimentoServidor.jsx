@@ -247,7 +247,8 @@ async function handleFinalizar(
 async function handleEncaminhar(
   atendimento,
   setorDestinoId,
-  motivo
+  motivo,
+  documentos
 ) {
   try {
     setCarregando(true);
@@ -256,7 +257,8 @@ async function handleEncaminhar(
     await encaminharAtendimento(
       atendimento.id,
       setorDestinoId,
-      motivo
+      motivo,
+      documentos
     );
 
     setObservacoes("");
