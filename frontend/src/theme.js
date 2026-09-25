@@ -1,10 +1,10 @@
 import { alpha, createTheme } from "@mui/material/styles";
 
 const CORES = {
-  azulPrincipal: "#005CA9",
-  azulEscuro: "#12355B",
-  azulClaro: "#E5F0FA",
-  azulMuitoClaro: "#F1F7FC",
+  azulPrincipal: "#1D4ED8",
+  azulEscuro: "#1E3A8A",
+  azulClaro: "#DBEAFE",
+  azulMuitoClaro: "#EFF6FF",
 
   verde: "#287D3C",
   verdeClaro: "#EAF5ED",
@@ -106,7 +106,7 @@ const theme = createTheme({
   },
 
   shape: {
-    borderRadius: 10,
+    borderRadius: 12,
   },
 
   spacing: 8,
@@ -221,7 +221,7 @@ const theme = createTheme({
         backgroundImage: CORES.gradienteCard,
 
         border: `1px solid ${CORES.borda}`,
-        borderRadius: 14,
+        borderRadius: 18,
 
         boxShadow:
           "0 10px 28px rgba(15, 23, 42, 0.05)",
@@ -283,7 +283,7 @@ const theme = createTheme({
     },
 
     rounded: {
-      borderRadius: 14,
+      borderRadius: 18,
     },
   },
 },
@@ -375,7 +375,7 @@ const theme = createTheme({
           "&.Mui-focused": {
             backgroundColor: CORES.branco,
             boxShadow:
-              "0 0 0 4px rgba(0, 92, 169, 0.08)",
+              "0 0 0 4px rgba(29, 78, 216, 0.07)",
           },
 
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
