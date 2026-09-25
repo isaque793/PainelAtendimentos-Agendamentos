@@ -162,8 +162,19 @@ if FRONTEND_DIST.exists():
         return FileResponse(FRONTEND_DIST / "index.html")
 
 
-@app.get("/")
+@app.get("/api/health")
 def verificar_api():
     return {
         "mensagem": "API do Painel de Atendimentos funcionando"
+    }
+
+
+@app.get("/")
+def pagina_inicial():
+    if FRONTEND_DIST.exists() and (FRONTEND_DIST / "index.html").is_file():
+        return FileResponse(FRONTEND_DIST / "index.html")
+
+    return {
+        "mensagem": "API do Painel de Atendimentos funcionando",
+        "aviso": "O frontend compilado nao foi encontrado em frontend/dist.",
     }
