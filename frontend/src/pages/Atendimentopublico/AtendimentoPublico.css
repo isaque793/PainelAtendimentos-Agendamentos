@@ -14,10 +14,67 @@
     background: linear-gradient(90deg, #1e3a8a 0%, #1d4ed8 100%);
     color: #ffffff;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18);
+    position: relative;
+    overflow: hidden;
+}
+
+.public-header::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    background: linear-gradient(
+        90deg,
+        #f2c94c,
+        #e6c979 46%,
+        #ffffff 100%
+    );
+    opacity: 0.9;
+}
+
+.public-header-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.public-header-brasao {
+    display: block;
+    width: 58px;
+    height: 58px;
+    flex-shrink: 0;
+    padding: 3px;
+    object-fit: contain;
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 6px;
+    box-shadow: 0 3px 10px rgba(8, 30, 52, 0.18);
+}
+
+.public-header-copy {
+    min-width: 0;
+}
+
+.public-header-kicker {
+    display: block;
+    margin-bottom: 2px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.66rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.16em !important;
+    line-height: 1.4 !important;
+}
+
+.public-header .MuiTypography-h5 {
+    font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+    letter-spacing: 0.005em;
 }
 
 .public-header .MuiTypography-body2 {
-    color: rgba(255, 255, 255, 0.78);
+    margin-top: 3px;
+    color: rgba(255, 255, 255, 0.75);
 }
 
 .public-content {
@@ -58,8 +115,6 @@
     color: #1d4ed8;
 }
 
-/* Bloco que confirma qual cadastro foi localizado antes de a pessoa
-   entrar na fila — evita registrar o atendimento na pessoa errada. */
 .cidadao-confirmado {
     padding: 16px 18px;
     border: 1px solid #bbf7d0;
@@ -79,6 +134,24 @@
 }
 
 @media (max-width: 650px) {
+    .public-header {
+        padding: 18px 0;
+    }
+
+    .public-header-inner {
+        gap: 12px;
+    }
+
+    .public-header-brasao {
+        width: 46px;
+        height: 46px;
+    }
+
+    .public-header-kicker {
+        font-size: 0.57rem !important;
+        letter-spacing: 0.1em !important;
+    }
+
     .public-content {
         padding-top: 28px;
     }

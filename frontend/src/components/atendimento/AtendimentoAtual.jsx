@@ -11,9 +11,10 @@ import {
   TextField,
   Typography,
   Dialog,
-  DialogActions,
-  DialogContent,
   DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
   FormControl,
   InputLabel,
   MenuItem,
@@ -25,6 +26,15 @@ import CheckCircleOutlinedIcon
 
 import DescriptionOutlinedIcon
   from "@mui/icons-material/DescriptionOutlined";
+
+import AttachFileOutlinedIcon
+  from "@mui/icons-material/AttachFileOutlined";
+
+import DownloadOutlinedIcon
+  from "@mui/icons-material/DownloadOutlined";
+
+import DeleteOutlinedIcon
+  from "@mui/icons-material/DeleteOutlined";
 
 import PersonOutlinedIcon
   from "@mui/icons-material/PersonOutlined";
@@ -40,6 +50,10 @@ import AppInfoCard from "../ui/AppInfoCard";
 import {
   resumoDocumentos,
 } from "../../utils/formatacao";
+
+import {
+  baixarDocumentoAtendimento,
+} from "../../services/atendimentoService";
 
 
 export default function AtendimentoAtual({
@@ -63,6 +77,9 @@ const [setorDestinoId, setSetorDestinoId] =
 const [motivoEncaminhamento, setMotivoEncaminhamento] =
   useState("");
 
+const [documentosEncaminhamento, setDocumentosEncaminhamento] =
+  useState([]);
+
 const setoresDisponiveis = useMemo(
   () =>
     setores.filter(
@@ -75,11 +92,44 @@ const setoresDisponiveis = useMemo(
 function abrirModalEncaminhamento() {
   setSetorDestinoId("");
   setMotivoEncaminhamento("");
+  setDocumentosEncaminhamento([]);
   setModalEncaminhamentoAberto(true);
 }
 
 function fecharModalEncaminhamento() {
   setModalEncaminhamentoAberto(false);
+}
+
+function selecionarDocumentos(evento) {
+  const selecionados = Array.from(evento.target.files || []);
+  setDocumentosEncaminhamento((atuais) => [
+    ...atuais,
+    ...selecionados,
+  ].slice(0, 5));
+  evento.target.value = "";
+}
+
+function removerDocumento(index) {
+  setDocumentosEncaminhamento((atuais) =>
+    atuais.filter((_, indice) => indice !== index)
+  );
+}
+
+async function baixarDocumento(documento) {
+  try {
+    const resultado = await baixarDocumentoAtendimento(
+      atendimento.id,
+      documento.id
+    );
+    const url = URL.createObjectURL(resultado.blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = decodeURIComponent(resultado.nomeArquivo);
+    link.click();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Erro ao baixar documento:", error);
+  }
 }
 
 async function confirmarEncaminhamento() {
@@ -94,12 +144,14 @@ async function confirmarEncaminhamento() {
   await aoEncaminhar(
     atendimento,
     Number(setorDestinoId),
-    motivoEncaminhamento.trim()
+    motivoEncaminhamento.trim(),
+    documentosEncaminhamento
   );
 
   setModalEncaminhamentoAberto(false);
   setSetorDestinoId("");
   setMotivoEncaminhamento("");
+  setDocumentosEncaminhamento([]);
 }
 
   if (!atendimento) {
@@ -206,6 +258,8 @@ async function confirmarEncaminhamento() {
   const descricao =
     atendimento?.descricao ||
     "Nenhuma descrição informada.";
+
+  const documentosRecebidos = atendimento?.documentos || [];
 
   const estaConvocado =
     atendimento?.status === "CONVOCADO";
@@ -371,6 +425,71 @@ async function confirmarEncaminhamento() {
               {descricao}
             </Typography>
           </Box>
+
+          {documentosRecebidos.length > 0 && (
+            <Box
+              sx={{
+                p: 1.5,
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: "8px",
+                backgroundColor: "rgba(248, 250, 252, 0.72)",
+              }}
+            >
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={0.75}
+              >
+                <AttachFileOutlinedIcon
+                  fontSize="small"
+                  color="action"
+                />
+                <Typography
+                  variant="caption"
+                  fontWeight={800}
+                  color="text.primary"
+                >
+                  Documentos recebidos ({documentosRecebidos.length})
+                </Typography>
+              </Stack>
+
+              <Stack spacing={0.75} sx={{ mt: 1 }}>
+                {documentosRecebidos.map((documento) => (
+                  <Stack
+                    key={documento.id}
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    spacing={1}
+                    sx={{ minWidth: 0 }}
+                  >
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        minWidth: 0,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {documento.nome_arquivo}
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant="text"
+                      startIcon={<DownloadOutlinedIcon />}
+                      onClick={() => baixarDocumento(documento)}
+                      sx={{ flexShrink: 0, textTransform: "none" }}
+                    >
+                      Baixar
+                    </Button>
+                  </Stack>
+                ))}
+              </Stack>
+            </Box>
+          )}
 
           <Divider />
 
@@ -555,6 +674,85 @@ async function confirmarEncaminhamento() {
             }
             disabled={carregando}
           />
+
+          <Box
+            sx={{
+              p: 1.5,
+              border: "1px dashed",
+              borderColor: "primary.light",
+              borderRadius: "8px",
+              backgroundColor: "#F8FBFF",
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={0.75}>
+              <AttachFileOutlinedIcon fontSize="small" color="primary" />
+              <Typography variant="body2" fontWeight={800}>
+                Documentos para o setor de destino
+              </Typography>
+            </Stack>
+
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: "block", mt: 0.5 }}
+            >
+              Opcional: até 5 arquivos, com no máximo 10 MB cada.
+            </Typography>
+
+            <Button
+              component="label"
+              variant="outlined"
+              size="small"
+              startIcon={<AttachFileOutlinedIcon />}
+              disabled={carregando || documentosEncaminhamento.length >= 5}
+              sx={{ mt: 1, textTransform: "none" }}
+            >
+              Selecionar documentos
+              <input
+                hidden
+                multiple
+                type="file"
+                accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx"
+                onChange={selecionarDocumentos}
+              />
+            </Button>
+
+            {documentosEncaminhamento.length > 0 && (
+              <Stack spacing={0.5} sx={{ mt: 1 }}>
+                {documentosEncaminhamento.map((documento, index) => (
+                  <Stack
+                    key={`${documento.name}-${documento.lastModified}`}
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    spacing={1}
+                    sx={{ minWidth: 0 }}
+                  >
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        minWidth: 0,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {documento.name}
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      aria-label={`Remover ${documento.name}`}
+                      onClick={() => removerDocumento(index)}
+                      disabled={carregando}
+                    >
+                      <DeleteOutlinedIcon fontSize="small" />
+                    </IconButton>
+                  </Stack>
+                ))}
+              </Stack>
+            )}
+          </Box>
         </Stack>
       </DialogContent>
 
