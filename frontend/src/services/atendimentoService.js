@@ -1,4 +1,4 @@
-import { apiRequest } from "../api/api";
+import { apiDownload, apiRequest } from "../api/api";
 
 
 export function cadastrarAtendimento(dados) {
@@ -88,17 +88,32 @@ export function finalizarAtendimento(
 export function encaminharAtendimento(
   atendimentoId,
   setorDestinoId,
-  motivo
+  motivo,
+  documentos = []
 ) {
+  const dados = new FormData();
+  dados.append("setor_destino_id", String(setorDestinoId));
+  dados.append("motivo", motivo);
+
+  for (const documento of documentos) {
+    dados.append("documentos", documento);
+  }
+
   return apiRequest(
     `/atendimentos/${atendimentoId}/encaminhar`,
     {
       method: "PATCH",
-      body: JSON.stringify({
-        setor_destino_id: setorDestinoId,
-        motivo,
-      }),
+      body: dados,
     }
+  );
+}
+
+export function baixarDocumentoAtendimento(
+  atendimentoId,
+  documentoId
+) {
+  return apiDownload(
+    `/atendimentos/${atendimentoId}/documentos/${documentoId}`
   );
 }
 
@@ -126,7 +141,7 @@ export function listarChamadaPublica() {
  * si é feito na tela, via fetch com o token no header — o endpoint é
  * protegido, então não dá para simplesmente linkar o endereço.
  *
- * ``opcoes.setorId`` só tem efeito para quem está logado como Direção;
+ * `opcoes.setorId` só tem efeito para quem está logado como Direção;
  * para os demais perfis o backend ignora esse parâmetro e usa sempre o
  * próprio setor do token.
  */
