@@ -20,6 +20,14 @@ relatórios consolidados).
 - Node.js 18 ou superior
 - (Opcional) PostgreSQL 14+ — se não configurado, o backend usa SQLite automaticamente
 
+## Inicializacao rapida no Windows
+
+Para uma maquina que ja esteja configurada, use **INICIAR.bat** na raiz do projeto. Ele sobe o FastAPI sem o modo `--reload`, usa o frontend ja compilado em `frontend/dist`, aguarda o servidor responder e abre o navegador em `http://localhost:8000`.
+
+Na primeira configuracao de uma maquina, execute **CONFIGURAR.bat** uma vez. Ele cria o ambiente virtual Python, instala as dependencias, cria uma configuracao local SQLite caso ainda nao exista, instala as dependencias do frontend e gera o build de producao.
+
+> Para a apresentacao, nao e necessario executar `npm run dev`. O FastAPI serve o frontend compilado e concentra backend + frontend em uma unica porta.
+
 ## Rodando pelo VS Code, sem digitar comando nenhum (recomendado)
 
 O projeto já vem com tarefas prontas do VS Code (pasta `.vscode/`).
