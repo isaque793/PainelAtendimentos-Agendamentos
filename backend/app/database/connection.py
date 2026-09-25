@@ -13,7 +13,7 @@ connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite")
 
 engine = create_engine(
     DATABASE_URL,
-    echo=True,
+    echo=False,
     connect_args=connect_args,
 )
 
