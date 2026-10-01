@@ -7,8 +7,6 @@ import CheckCircleOutlinedIcon
     from "@mui/icons-material/CheckCircleOutlined";
 import PersonSearchOutlinedIcon
     from "@mui/icons-material/PersonSearchOutlined";
-import EventAvailableOutlinedIcon
-    from "@mui/icons-material/EventAvailableOutlined";
 
 import {
     Alert,
