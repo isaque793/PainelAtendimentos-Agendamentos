@@ -8,6 +8,9 @@ import {
 import AtendimentoPublico
     from "./pages/Atendimentopublico/AtendimentoPublico";
 
+import AgendamentoPublicoPage
+    from "./pages/AgendamentoPublicoPage/AgendamentoPublicoPage";
+
 import Dashboard from "./pages/Dashboard/Dashboard";
 
 import InternalLayout from "./layouts/InternalLayout";
@@ -35,6 +38,12 @@ function App() {
             <Routes>
                 {/* Totem público — sem login. */}
                 <Route path="/" element={<AtendimentoPublico />} />
+
+                {/* Agendamento público — sem login. */}
+                <Route
+                    path="/agendamento"
+                    element={<AgendamentoPublicoPage />}
+                />
 
                 {/* TV da sala de espera — sem login. */}
                 <Route path="/chamada" element={<PainelChamada />} />
