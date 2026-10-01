@@ -5,6 +5,8 @@ import ConfirmationNumberOutlinedIcon
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import CheckCircleOutlinedIcon
     from "@mui/icons-material/CheckCircleOutlined";
+import EventAvailableOutlinedIcon
+    from "@mui/icons-material/EventAvailableOutlined";
 import PersonSearchOutlinedIcon
     from "@mui/icons-material/PersonSearchOutlined";
 import EventAvailableOutlinedIcon
@@ -373,14 +375,35 @@ function AtendimentoPublico() {
 
             <Container maxWidth="md" className="public-content">
                 <Box className="public-introduction">
-                    <Typography variant="h3" component="h1" fontWeight={800}>
-                        Solicite seu atendimento
-                    </Typography>
+                    <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        spacing={2}
+                        alignItems={{ xs: "flex-start", sm: "center" }}
+                        justifyContent="space-between"
+                    >
+                        <Box>
+                            <Typography
+                                variant="h3"
+                                component="h1"
+                                fontWeight={800}
+                            >
+                                Solicite seu atendimento
+                            </Typography>
 
-                    <Typography color="text.secondary">
-                        Preencha os dados abaixo para entrar na fila de
-                        atendimento.
-                    </Typography>
+                            <Typography color="text.secondary">
+                                Preencha os dados abaixo para entrar na fila
+                                de atendimento.
+                            </Typography>
+                        </Box>
+
+                        <Button
+                            href="/agendamento"
+                            variant="outlined"
+                            startIcon={<EventAvailableOutlinedIcon />}
+                        >
+                            Agendar atendimento
+                        </Button>
+                    </Stack>
                 </Box>
 
                 {solicitacaoConcluida && (
