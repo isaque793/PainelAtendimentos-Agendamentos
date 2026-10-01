@@ -40,9 +40,6 @@ import {
 import { listarSetoresPublicos }
     from "../../services/setorService";
 
-import AgendamentoPublico
-    from "../AgendamentoPublico/AgendamentoPublico";
-
 import {
     apenasDigitos,
     mascararCpf,
@@ -433,11 +430,6 @@ function AtendimentoPublico() {
                             label="Já tenho cadastro"
                         />
 
-                        <Tab
-                            icon={<EventAvailableOutlinedIcon />}
-                            iconPosition="start"
-                            label="Agendar atendimento"
-                        />
                     </Tabs>
 
                     <CardContent sx={{ p: { xs: 2.5, sm: 4 } }}>
@@ -454,13 +446,6 @@ function AtendimentoPublico() {
                                     Carregando setores...
                                 </Typography>
                             </Stack>
-                        )}
-
-                        {aba === 2 && (
-                            <AgendamentoPublico
-                                setores={setores}
-                                carregandoSetores={carregandoSetores}
-                            />
                         )}
 
                         {aba === 1 && !cidadaoIdentificado && (
