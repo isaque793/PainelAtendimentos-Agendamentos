@@ -1,0 +1,9 @@
+.public-introduction {
+    margin-bottom: 24px;
+}
+
+@media (max-width: 600px) {
+    .public-introduction .MuiButton-root {
+        width: 100%;
+    }
+}
